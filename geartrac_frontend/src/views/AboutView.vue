@@ -1,5 +1,5 @@
 <script setup>
-  import Info from '../components/Info.vue'
+  import Info from '../components/Authenticate.vue'
 </script>
 
 <template>
