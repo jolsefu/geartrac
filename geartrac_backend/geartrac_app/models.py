@@ -8,6 +8,8 @@ class User(AbstractUser):
         (3, 'Staff Member'),
     ]
 
+    username = None
+
     groups = models.ManyToManyField(Group, related_name="custom_user_set")
     user_permissions = models.ManyToManyField(Permission, related_name="custom_user_permissions")
 
