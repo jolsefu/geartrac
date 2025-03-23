@@ -36,8 +36,22 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'geartrac_app',
     'rest_framework',
-    'corsheaders'
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': {
+            'profile',
+            'email',
+        },
+        'AUTH_PARAMS': {'access_type': 'online'}
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -47,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'geartrac_site.urls'
@@ -125,3 +140,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ORIGIN_ALLOW_ALL = True
 
 AUTH_USER_MODE = 'geartrac_app.User'
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKEND = {
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.accounts.auth_backends.AuthenticationBackend',
+}
+
+LOGIN_DIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
