@@ -125,5 +125,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ORIGIN_ALLOW_ALL = True
 
 AUTH_USER_MODE = 'geartrac_app.User'
-
-ROOT_URLCONF = 'googlelogin.urls'
