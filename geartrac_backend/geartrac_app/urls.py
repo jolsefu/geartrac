@@ -1,9 +1,15 @@
-from django.urls import path
+from django.urls import include, path, re_path
 
-from . import views
+from .views import GoogleLogin
 
 urlpatterns = [
-    path('index/', views.index, name='index'),
-    path('', views.home, name='home'),
-    path('logout', views.logout_view),
+    path('v1/auth/', include('dj_rest_auth.urls')),
+    re_path(r'^v1/auth/accounts/', include('allauth.urls')),
+    path('v1/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('v1/auth/google/', GoogleLogin.as_view(), name='google_login'),
+    # path(
+    #     'api/v1/auth/google/callback/',
+    #     GoogleLoginCallback.as_view(),
+    #     name='google_login_callback',
+    # ),
 ]
