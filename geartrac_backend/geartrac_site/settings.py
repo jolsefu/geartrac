@@ -34,24 +34,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'geartrac_app',
-    'rest_framework',
+
+    'corsheaders',
+
     'django.contrib.sites',
+
+    'rest_framework',
+    'rest_framework.authtoken',
+
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'dj_rest_auth.registration',
 ]
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': {
-            'profile',
-            'email',
-        },
-        'AUTH_PARAMS': {'access_type': 'online'}
-    }
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -61,7 +59,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
     'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'geartrac_site.urls'
@@ -137,16 +137,58 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ORIGIN_ALLOW_ALL = True
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_CREDENTIALS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000/",
+    ]
 
-AUTH_USER_MODE = 'geartrac_app.User'
+import os
+from dotenv import load_dotenv
 
-SITE_ID = 1
+load_dotenv('../keys.env')
+
+GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
+GOOGLE_OAUTH_CLIENT_SECRET = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
+GOOGLE_OAUTH_CALLBACK_URL = os.getenv('GOOGLE_OAUTH_CALLBACK_URL')
+
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         "APPS": [
+#             {
+#                 "client_id": GOOGLE_OAUTH_CLIENT_ID,
+#                 "secret": GOOGLE_OAUTH_CLIENT_SECRET,
+#                 "key": "",
+#             },
+#         ],
+#         'SCOPE': {
+#             'profile',
+#             'email',
+#         },
+#         'AUTH_PARAMS': {'access_type': 'online'}
+#     }
+# }
+
+SITE_ID = 2
+
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 AUTHENTICATION_BACKEND = {
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.accounts.auth_backends.AuthenticationBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 }
 
-LOGIN_DIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
