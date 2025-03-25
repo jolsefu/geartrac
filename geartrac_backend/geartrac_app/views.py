@@ -100,13 +100,14 @@ class ProtectedView(APIView):
         return Response({"message": f"Hello, {request.user.username}, {token}, {request}"})
 
 class LogoutView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
+            response = Response({ 'message': 'Logged out successfully' })
+            response.delete_cookie('access_token')
             token = Token.objects.get(user=request.user)
             token.delete()
-            return Response({"detail": "Successfully logged out."}, status=200)
+            return response
         except Token.DoesNotExist:
             return Response({"error": "Token not found"}, status=400)
