@@ -1,20 +1,34 @@
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
-# from django.conf import settings
 
-# from urllib.parse import urljoin
-
-# import requests
-# from django.urls import reverse
-# from rest_framework import status
-# from rest_framework.response import Response
-# from rest_framework.views import APIView
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status, permissions
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view
 
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
+
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+"""
+    CSRF Cookie Authentication
+"""
+
+@api_view(['GET'])
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return Response({ 'message': 'CSRF cookie set' })
+
+"""
+    Create only accounts that ends with carsu.edu.ph
+"""
 
 User = get_user_model()
 
@@ -23,6 +37,12 @@ def check_email_domain(sender, instance, created, **kwargs):
     if created and not instance.email.endswith("@carsu.edu.ph"):
         instance.delete()
         raise ValidationError("Only @carsu.edu.ph emails are allowed.")
+
+"""
+    GoogleOAuth2CLient and GoogleLogin(SocialLoginView)
+    handles the google auth code sent by the frontend
+    to ensure that they logged in using a verified email
+"""
 
 class CustomGoogleOAuth2Client(OAuth2Client):
     def __init__(
@@ -33,7 +53,7 @@ class CustomGoogleOAuth2Client(OAuth2Client):
         access_token_method,
         access_token_url,
         callback_url,
-        _scope,  # This is fix for incompatibility between django-allauth==65.3.1 and dj-rest-auth==7.0.1
+        _scope,
         scope_delimiter=" ",
         headers=None,
         basic_auth=False,
@@ -55,21 +75,38 @@ class GoogleLogin(SocialLoginView):
     callback_url = 'postmessage'
     client_class = CustomGoogleOAuth2Client
 
-# class GoogleLoginCallback(APIView):
-#     def get(self, request, *args, **kwargs):
-#         """
-#         If you are building a fullstack application (eq. with React app next to Django)
-#         you can place this endpoint in your frontend application to receive
-#         the JWT tokens there - and store them in the state
-#         """
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
 
-#         code = request.GET.get("code")
+        if response.status_code == 200 and response.data['key']:
+            token = response.data['key']
 
-#         if code is None:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
+            response.set_cookie(
+                'access_token',
+                token,
+                httponly=True,
+                secure=True,
+                samesite='Lax',
+                max_age=3600,
+            )
 
-#         # Remember to replace the localhost:8000 with the actual domain name before deployment
-#         token_endpoint_url = urljoin("http://localhost:8000", reverse("google_login"))
-#         response = requests.post(url=token_endpoint_url, data={"code": code})
+        return response
 
-#         return Response(response.json(), status=status.HTTP_200_OK)
+class ProtectedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        token = Token.objects.get(user=request.user)
+        return Response({"message": f"Hello, {request.user.username}, {token}, {request}"})
+
+class LogoutView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            token = Token.objects.get(user=request.user)
+            token.delete()
+            return Response({"detail": "Successfully logged out."}, status=200)
+        except Token.DoesNotExist:
+            return Response({"error": "Token not found"}, status=400)

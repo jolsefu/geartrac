@@ -1,15 +1,10 @@
 from django.urls import include, path, re_path
 
-from .views import GoogleLogin
+from .views import *
 
 urlpatterns = [
-    path('v1/auth/', include('dj_rest_auth.urls')),
-    re_path(r'^v1/auth/accounts/', include('allauth.urls')),
-    path('v1/auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('v1/auth/google/', GoogleLogin.as_view(), name='google_login'),
-    # path(
-    #     'api/v1/auth/google/callback/',
-    #     GoogleLoginCallback.as_view(),
-    #     name='google_login_callback',
-    # ),
+    path("auth/csrf/", get_csrf_token, name="csrf_token"),
+    path('auth/google/', GoogleLogin.as_view(), name='google_login'),
+    path('auth/logout/', LogoutView.as_view(), name='logout'),
+    path('auth/protected/', ProtectedView.as_view(), name='protected'),
 ]
