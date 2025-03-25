@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'dj_rest_auth.registration',
 ]
 
 MIDDLEWARE = [
@@ -142,34 +141,17 @@ if DEBUG:
     CORS_ALLOW_CREDENTIALS = True
 else:
     CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000/",
+        'http://localhost:5173',
     ]
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv('../keys.env')
-
-GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
-GOOGLE_OAUTH_CLIENT_SECRET = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
-GOOGLE_OAUTH_CALLBACK_URL = os.getenv('GOOGLE_OAUTH_CALLBACK_URL')
-
-# SOCIALACCOUNT_PROVIDERS = {
-#     'google': {
-#         "APPS": [
-#             {
-#                 "client_id": GOOGLE_OAUTH_CLIENT_ID,
-#                 "secret": GOOGLE_OAUTH_CLIENT_SECRET,
-#                 "key": "",
-#             },
-#         ],
-#         'SCOPE': {
-#             'profile',
-#             'email',
-#         },
-#         'AUTH_PARAMS': {'access_type': 'online'}
-#     }
-# }
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False  # Set to True in production (only allow HTTPS)
+CSRF_USE_SESSIONS = False
+CSRF_TRUSTED_ORIGINS = [
+    # 'http://localhost:5173',
+]
 
 SITE_ID = 2
 
@@ -182,13 +164,13 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 AUTHENTICATION_BACKEND = {
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend', 'allauth.account.auth_backends.AuthenticationBackend',
 }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        'geartrac_app.authentication.CookieTokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
     ]
 }
