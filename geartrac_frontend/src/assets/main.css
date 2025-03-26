@@ -1,9 +1,18 @@
 @import './base.css';
 @import 'tailwindcss';
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
     --primary-color: #181818;
     --secondary-color: #3b3b3b;
     --tertiary-color: #222222;
     --hover-color: #505050;
+}
+layer base {
+  :root {
+        --radius: 0.5rem;
+    }
 }
