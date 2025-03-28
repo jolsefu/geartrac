@@ -21,8 +21,8 @@ setTimeout(() => {
 
 <template>
   <transition name="swipe-up">
-    <div class="flex justify-center h-screen pt-[8rem] max-w">
-      <Card class="w-full sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-1/4 h-fit m-4">
+    <div v-if="isVisible" class="flex justify-center h-screen pt-[8rem] max-w">
+      <Card class="w-full sm:w-3/4 md:w-1/2 xl:w-fit h-fit m-4">
         <CardHeader>
           <CardTitle>Login to GearTRAC</CardTitle>
           <CardDescription>You must login via carsu.edu.ph emails!</CardDescription>
