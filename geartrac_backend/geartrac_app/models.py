@@ -52,10 +52,19 @@ class Position(models.Model):
         ('editor_in_chief', 'Editor-in-Chief'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user')
     section = models.CharField(max_length=20, choices=SECTION_CHOICES, default='staff_member')
     designation = models.CharField(max_length=30, choices=DESIGNATION_CHOICES, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.user.email} - {self.section} - {self.designation}'
+
+class Gear(models.Model):
+    name = models.CharField(max_length=40)
+    unit_description = models.TextField()
+    property_number = models.CharField(max_length=50, unique=True)
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, default=None)
+
+    def __str__(self):
+        return f'{self.name} - {self.unit_description} - {self.property_number} - {self.owner}'
