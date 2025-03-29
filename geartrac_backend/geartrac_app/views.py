@@ -10,6 +10,8 @@ from rest_framework import status, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 
+from .serializers import *
+
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -92,13 +94,6 @@ class GoogleLogin(SocialLoginView):
 
         return response
 
-class ProtectedView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        token = Token.objects.get(user=request.user)
-        return Response({"message": f"Hello, {request.user.username}, {token}, {request}"})
-
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -111,3 +106,16 @@ class LogoutView(APIView):
             return response
         except Token.DoesNotExist:
             return Response({"error": "Token not found"}, status=400)
+
+class ValidateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(status=200)
+
+class DetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response(UserSerializer(user).data, status=200)
