@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { ref } from 'vue'
+
 import { googleSdkLoaded } from 'vue3-google-login'
 import google_keys from '../../google_keys.json'
 
@@ -13,6 +15,30 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });
+
+export const isAuthenticated = ref(false)
+export const userDetails = ref({})
+
+const checkAuth = async () => {
+  try {
+    const response = await api.get('auth/validate/')
+    isAuthenticated.value = response.status === 200
+  } catch (error) {
+    isAuthenticated.value = false
+  }
+}
+
+const retrieveDetails = async () => {
+  try {
+    const response = await api.get('auth/details/')
+    userDetails.value = response.data
+  } catch (error) {
+    userDetails.value = null
+  }
+}
+
+checkAuth()
+retrieveDetails()
 
 /**
  *
