@@ -8,4 +8,6 @@ urlpatterns = [
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('auth/validate/', ValidateView.as_view(), name='validate'),
     path('auth/details/', DetailsView.as_view(), name='details'),
+
+    path('get_gears/', GearsView.as_view(), name='gears'),
 ]

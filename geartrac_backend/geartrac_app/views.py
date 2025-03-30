@@ -5,13 +5,12 @@ from dj_rest_auth.registration.views import SocialLoginView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status, permissions
+from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 
 from .serializers import *
 
-from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
@@ -30,8 +29,6 @@ def get_csrf_token(request):
 """
     Create only accounts that ends with carsu.edu.ph
 """
-
-User = get_user_model()
 
 @receiver(post_save, sender=User)
 def check_email_domain(sender, instance, created, **kwargs):
@@ -104,17 +101,25 @@ class LogoutView(APIView):
             token.delete()
             return response
         except Token.DoesNotExist:
-            return Response({"error": "Token not found"}, status=400)
+            return Response({"error": "Token not found"}, status=status.HTTP_400_BAD_REQUEST)
 
 class ValidateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response(status=200)
+        return Response(status=status.HTTP_200_OK)
 
 class DetailsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        return Response(UserSerializer(user).data, status=200)
+        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+class GearsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        gears = Gear.objects.all()
+        serializer = GearSerializer(gears, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
