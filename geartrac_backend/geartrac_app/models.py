@@ -76,14 +76,14 @@ class Gear(models.Model):
         User,
         on_delete=models.CASCADE,
         null=True,
-        default=None
+        default=None,
     )
     name = models.CharField(max_length=40)
     unit_description = models.TextField()
     property_number = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
-        return f'{self.name} - {self.unit_description} - {self.property_number} - {self.owner}'
+        return f'{self.name} - {self.property_number} - {self.owner} - {self.unit_description}'
 
 class Slip(models.Model):
     CONDITION_CHOICES = [
@@ -118,26 +118,30 @@ class Slip(models.Model):
         User,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         related_name='section_editor_signature',
     )
     circulations_manager_signature = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         related_name='circulations_manager_editor',
     )
     managing_editor_signature = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         related_name='managing_editor_signature',
     )
     editor_in_chief_signature = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         related_name='editor_in_chief_signature',
     )
 
     def __str__(self):
-        return f'{self.gear_borrowed} - {self.condition_before} - {self.condition_after} - {self.borrowed_date} - {self.return_date}'
+        return f'{[gear.name for gear in self.gear_borrowed.all()]} - {self.condition_before} - {self.condition_after} - {self.borrowed_date} - {self.return_date}'
