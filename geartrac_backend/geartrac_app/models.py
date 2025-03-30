@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Position(models.Model):
     SECTION_CHOICES = [
@@ -66,3 +67,62 @@ class Gear(models.Model):
 
     def __str__(self):
         return f'{self.name} - {self.unit_description} - {self.property_number} - {self.owner}'
+
+class Slip(models.Model):
+    CONDITION_CHOICES = [
+        ('great', 'Great'),
+        ('good', 'Good'),
+        ('bad', 'Bad'),
+        ('broken', 'Broken'),
+    ]
+
+    condition_before = models.CharField(
+        choices=CONDITION_CHOICES,
+        default='good'
+    )
+    condition_after = models.CharField(
+        choices=CONDITION_CHOICES,
+        default='good',
+    )
+    borrowed_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        default=timezone.now,
+    )
+    return_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    gear_borrowed = models.ManyToManyField(
+        Gear,
+        on_delete=models.CASCADE,
+        null=False,
+    )
+
+    section_editor_signature = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='section_editor_signature',
+    )
+    circulations_manager_signature = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='circulations_manager_editor',
+    )
+    managing_editor_signature = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='managing_editor_signature',
+    )
+    editor_in_chief_signature = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='editor_in_chief_signature',
+    )
+
+    def __str__(self):
+        return f'{self.gear_borrowed} - {self.condition_before} - {self.condition_after} - {self.borrowed_date} - {self.return_date}'
