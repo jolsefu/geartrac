@@ -77,7 +77,16 @@ class Gear(models.Model):
         on_delete=models.CASCADE,
         null=True,
         default=None,
+        related_name='owner'
     )
+    used_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='used_by'
+    )
+
     name = models.CharField(max_length=40)
     unit_description = models.TextField()
     property_number = models.CharField(max_length=50, unique=True)
