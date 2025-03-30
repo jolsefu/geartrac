@@ -81,6 +81,8 @@ class Gear(models.Model):
     name = models.CharField(max_length=40)
     unit_description = models.TextField()
     property_number = models.CharField(max_length=50, unique=True)
+    used = models.BooleanField(default=False)
+    borrowed = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.name} - {self.property_number} - {self.owner} - {self.unit_description}'
