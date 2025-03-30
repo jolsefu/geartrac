@@ -94,10 +94,12 @@ class Slip(models.Model):
     ]
 
     condition_before = models.CharField(
+        max_length=10,
         choices=CONDITION_CHOICES,
         default='good'
     )
     condition_after = models.CharField(
+        max_length=10,
         choices=CONDITION_CHOICES,
         default='good',
     )
@@ -110,11 +112,7 @@ class Slip(models.Model):
         null=True,
         blank=True
     )
-    gear_borrowed = models.ManyToManyField(
-        Gear,
-        on_delete=models.CASCADE,
-        null=False,
-    )
+    gear_borrowed = models.ManyToManyField(Gear)
 
     section_editor_signature = models.ForeignKey(
         User,
