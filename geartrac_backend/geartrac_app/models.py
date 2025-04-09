@@ -168,3 +168,21 @@ class Slip(models.Model):
 
     def __str__(self):
         return f'{[gear.name for gear in self.gear_borrowed.all()]} - {self.condition_before} - {self.condition_after} - {self.borrowed_date} - {self.return_date}'
+
+class Log(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='log_user'
+    )
+    gear = models.ForeignKey(
+        Gear,
+        on_delete=models.CASCADE,
+        related_name='log_gear'
+    )
+
+    action = models.CharField(max_length=50)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.email} - {self.action} - {self.timestamp}'
