@@ -9,13 +9,15 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 
-from .serializers import *
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 
 from django.views.decorators.csrf import ensure_csrf_cookie
+
+from .serializers import *
+from .models import *
+
 
 """
     CSRF Cookie Authentication
@@ -123,3 +125,37 @@ class GearsView(APIView):
         gears = Gear.objects.all()
         serializer = GearSerializer(gears, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        action = request.data.get('action')
+        gear_id = request.data.get('gear_id')
+
+        if not action or not gear_id:
+            return Response({'error': 'Action and gear_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            gear = Gear.objects.get(id=gear_id)
+        except Gear.DoesNotExist:
+            return Response({'error': 'Gear not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if action == 'borrow':
+            pass
+
+        elif action == 'use':
+            gear.used_by = request.user
+            gear.save()
+
+            Log.objects.create(user=request.user, gear=gear, action=action)
+
+            return Response({'message': 'Gear successfully marked as used'}, status=status.HTTP_200_OK)
+
+        elif action == 'return':
+            gear.used_by = None
+            gear.borrowed_by = None
+            gear.save()
+
+            Log.objects.create(user=request.user, gear=gear, action=action)
+
+            return Response({'message': 'Gear successfully marked as returned'}, status=status.HTTP_200_OK)
+
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)

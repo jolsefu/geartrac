@@ -9,5 +9,5 @@ urlpatterns = [
     path('auth/validate/', ValidateView.as_view(), name='validate'),
     path('auth/details/', DetailsView.as_view(), name='details'),
 
-    path('get_gears/', GearsView.as_view(), name='gears'),
+    path('gear/', GearsView.as_view(), name='gears'),
 ]
