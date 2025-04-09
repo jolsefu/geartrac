@@ -86,12 +86,24 @@ class Gear(models.Model):
         blank=True,
         related_name='used_by'
     )
+    borrowed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='borrowed_by'
+    )
 
     name = models.CharField(max_length=40)
     unit_description = models.TextField()
     property_number = models.CharField(max_length=50, unique=True)
     used = models.BooleanField(default=False)
     borrowed = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        self.used = self.used_by is not None
+        self.borrowed = self.borrowed_by is not None
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.name} - {self.property_number} - {self.owner} - {self.unit_description}'
