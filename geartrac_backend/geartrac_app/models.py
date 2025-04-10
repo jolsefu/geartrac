@@ -135,6 +135,10 @@ class Slip(models.Model):
         null=True,
         blank=True,
     )
+    expected_return_date = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
 
     section_editor_signature = models.BooleanField(default=False)
     circulations_manager_signature = models.BooleanField(default=False)
