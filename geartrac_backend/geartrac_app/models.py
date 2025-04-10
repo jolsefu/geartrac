@@ -130,43 +130,18 @@ class Slip(models.Model):
     borrowed_date = models.DateTimeField(
         null=True,
         blank=True,
-        default=timezone.now,
     )
     return_date = models.DateTimeField(
         null=True,
         blank=True,
-        default=timezone.now,
     )
-    gear_borrowed = models.ManyToManyField(Gear)
 
-    section_editor_signature = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='section_editor_signature',
-    )
-    circulations_manager_signature = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='circulations_manager_editor',
-    )
-    managing_editor_signature = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='managing_editor_signature',
-    )
-    editor_in_chief_signature = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='editor_in_chief_signature',
-    )
+    section_editor_signature = models.BooleanField(default=False)
+    circulations_manager_signature = models.BooleanField(default=False)
+    managing_editor_signature = models.BooleanField(default=False)
+    editor_in_chief_signature = models.BooleanField(default=False)
+
+    gear_borrowed = models.ManyToManyField(Gear)
 
     def __str__(self):
         return f'{[gear.name for gear in self.gear_borrowed.all()]} - {self.condition_before} - {self.condition_after} - {self.borrowed_date} - {self.return_date}'
