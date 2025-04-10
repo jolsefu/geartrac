@@ -131,47 +131,80 @@ class GearsView(APIView):
         gear_id = request.data.get('gear_id')
 
         if not action or not gear_id:
-            return Response({'error': 'Action and gear_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Action and Gears are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            gear = Gear.objects.get(id=gear_id)
-        except Gear.DoesNotExist:
-            return Response({'error': 'Gear not found'}, status=status.HTTP_404_NOT_FOUND)
+        for id in gear_id:
+            try:
+                gear = Gear.objects.get(id=id)
+            except Gear.DoesNotExist:
+                return Response({'error': 'Gear not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if gear.borrowed_by:
+                return Response({'message': f'Gear with ID {id} is already borrowed'}, status=status.HTTP_200_OK)
+            if gear.used_by:
+                return Response({'message': f'Gear with ID {id} is currently in use'}, status=status.HTTP_200_OK)
+
+        gear = Gear.objects.filter(id__in=gear_id)
 
         if action == 'borrow':
-            gear_ids = request.data.get('gear_ids', [])
-            gear = Gear.objects.filter(id__in=gear_ids)
+            if not request.data.get('expected_return_date'):
+                return Response({'error': 'Expected return date is required'}, status=status.HTTP_400_BAD_REQUEST)
+            if not request.data.get('condition_before'):
+                return Response({'error': 'Condition before is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if not gear:
-                return Response({'error': 'No gears found'}, status=status.HTTP_400_BAD_REQUEST)
-
-            Slip.objects.create(
-                borrowed_by=request.user,
-                gear_borrowed=gear,
+            slip = Slip.objects.create(
+                slipped_by=request.user,
                 condition_before=request.data.get('condition_before'),
                 borrowed_date=timezone.now(),
                 expected_return_date=request.data.get('expected_return_date'),
             )
+            slip.gear_borrowed.set(gear)
+            slip.save()
 
-            Log.objects.create(user=request.user, gear=gear, action=action)
+            log = Log.objects.create(user=request.user, action=action)
+            log.gear.set(gear)
+            log.save()
 
             return Response({'message': 'Gear/s successfully borrowed'}, status=status.HTTP_200_OK)
 
         elif action == 'use':
-            gear.used_by = request.user
-            gear.save()
+            for g in gear:
+                g.used_by = request.user
+                g.save()
 
             Log.objects.create(user=request.user, gear=gear, action=action)
 
             return Response({'message': 'Gear successfully marked as used'}, status=status.HTTP_200_OK)
 
-        elif action == 'return':
-            gear.used_by = None
-            gear.borrowed_by = None
-            gear.save()
+        return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
-            Log.objects.create(user=request.user, gear=gear, action=action)
+    def put(self, request):
+        slip_id = request.data.get('slip_id')
+        action = request.data.get('action')
 
-            return Response({'message': 'Gear successfully marked as returned'}, status=status.HTTP_200_OK)
+        if not slip_id or not action:
+            return Response({'error': 'Slip ID and action are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            slip = Slip.objects.get(id=slip_id)
+        except Slip.DoesNotExist:
+            return Response({'error': 'Slip not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if slip.slipped_by != request.user:
+            return Response({'error': 'You cannot modify this slip'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if action == 'return':
+            condition_after = request.data.get('condition_after')
+
+            if not condition_after:
+                return Response({'error': 'Condition after is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            Slip.return_date = timezone.now()
+            Slip.condition_after = condition_after
+            Slip.save()
+
+            Log.objects.create(user=request.user, gear=Slip.gear_borrowed, action=action)
+
+            return Response({'message': 'Gear successfully returned'}, status=status.HTTP_200_OK)
 
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)

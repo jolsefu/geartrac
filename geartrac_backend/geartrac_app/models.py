@@ -95,7 +95,7 @@ class Gear(models.Model):
     )
 
     name = models.CharField(max_length=40)
-    unit_description = models.TextField()
+    unit_description = models.TextField(blank=True)
     property_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
     used = models.BooleanField(default=False)
     borrowed = models.BooleanField(default=False)
@@ -106,7 +106,7 @@ class Gear(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.name} - {self.property_number} - {self.owner} - {self.unit_description}'
+        return f'{self.property_number} - {self.name} - {self.owner}'
 
 class Slip(models.Model):
     CONDITION_CHOICES = [
@@ -115,6 +115,14 @@ class Slip(models.Model):
         ('bad', 'Bad'),
         ('broken', 'Broken'),
     ]
+
+    slipped_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='slipped_by',
+        null=True,
+        blank=True,
+    )
 
     condition_before = models.CharField(
         max_length=10,
@@ -150,8 +158,15 @@ class Slip(models.Model):
         related_name='gear_borrowed',
     )
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        for gear in self.gear_borrowed.all():
+            gear.borrowed_by = self.slipped_by
+            gear.borrowed = True
+            gear.save()
+
     def __str__(self):
-        return f'{[gear.name for gear in self.gear_borrowed.all()]} - {self.condition_before} - {self.condition_after} - {self.borrowed_date} - {self.return_date}'
+        return f'{self.slipped_by}'
 
 class Log(models.Model):
     user = models.ForeignKey(
