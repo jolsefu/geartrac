@@ -139,7 +139,23 @@ class GearsView(APIView):
             return Response({'error': 'Gear not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if action == 'borrow':
-            pass
+            gear_ids = request.data.get('gear_ids', [])
+            gear = Gear.objects.filter(id__in=gear_ids)
+
+            if not gear:
+                return Response({'error': 'No gears found'}, status=status.HTTP_400_BAD_REQUEST)
+
+            Slip.objects.create(
+                borrowed_by=request.user,
+                gear_borrowed=gear,
+                condition_before=request.data.get('condition_before'),
+                borrowed_date=timezone.now(),
+                expected_return_date=request.data.get('expected_return_date'),
+            )
+
+            Log.objects.create(user=request.user, gear=gear, action=action)
+
+            return Response({'message': 'Gear/s successfully borrowed'}, status=status.HTTP_200_OK)
 
         elif action == 'use':
             gear.used_by = request.user

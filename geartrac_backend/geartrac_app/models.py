@@ -72,7 +72,7 @@ class Position(models.Model):
         return f'{self.user.email} - {self.section} - {self.designation}'
 
 class Gear(models.Model):
-    owner = models.OneToOneField(
+    owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         null=True,
@@ -96,7 +96,7 @@ class Gear(models.Model):
 
     name = models.CharField(max_length=40)
     unit_description = models.TextField()
-    property_number = models.CharField(max_length=50, unique=True)
+    property_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
     used = models.BooleanField(default=False)
     borrowed = models.BooleanField(default=False)
 
@@ -145,7 +145,10 @@ class Slip(models.Model):
     managing_editor_signature = models.BooleanField(default=False)
     editor_in_chief_signature = models.BooleanField(default=False)
 
-    gear_borrowed = models.ManyToManyField(Gear)
+    gear_borrowed = models.ManyToManyField(
+        Gear,
+        related_name='gear_borrowed',
+    )
 
     def __str__(self):
         return f'{[gear.name for gear in self.gear_borrowed.all()]} - {self.condition_before} - {self.condition_after} - {self.borrowed_date} - {self.return_date}'
@@ -156,9 +159,8 @@ class Log(models.Model):
         on_delete=models.CASCADE,
         related_name='log_user',
     )
-    gear = models.ForeignKey(
+    gear = models.ManyToManyField(
         Gear,
-        on_delete=models.CASCADE,
         related_name='log_gear',
     )
 
