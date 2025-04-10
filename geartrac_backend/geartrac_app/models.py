@@ -77,21 +77,21 @@ class Gear(models.Model):
         on_delete=models.CASCADE,
         null=True,
         default=None,
-        related_name='owner'
+        related_name='owner',
     )
     used_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='used_by'
+        related_name='used_by',
     )
     borrowed_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='borrowed_by'
+        related_name='borrowed_by',
     )
 
     name = models.CharField(max_length=40)
@@ -119,13 +119,14 @@ class Slip(models.Model):
     condition_before = models.CharField(
         max_length=10,
         choices=CONDITION_CHOICES,
-        default='good'
+        default='good',
     )
     condition_after = models.CharField(
         max_length=10,
         choices=CONDITION_CHOICES,
         default='good',
     )
+
     borrowed_date = models.DateTimeField(
         null=True,
         blank=True,
@@ -133,7 +134,8 @@ class Slip(models.Model):
     )
     return_date = models.DateTimeField(
         null=True,
-        blank=True
+        blank=True,
+        default=timezone.now,
     )
     gear_borrowed = models.ManyToManyField(Gear)
 
@@ -173,12 +175,12 @@ class Log(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='log_user'
+        related_name='log_user',
     )
     gear = models.ForeignKey(
         Gear,
         on_delete=models.CASCADE,
-        related_name='log_gear'
+        related_name='log_gear',
     )
 
     action = models.CharField(max_length=50)
