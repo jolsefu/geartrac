@@ -208,3 +208,12 @@ class GearsView(APIView):
             return Response({'message': 'Gear successfully returned'}, status=status.HTTP_200_OK)
 
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+class LogsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        logs = Log.objects.all()
+        serializer = LogSerializer(logs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

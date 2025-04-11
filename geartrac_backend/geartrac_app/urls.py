@@ -10,4 +10,5 @@ urlpatterns = [
     path('auth/details/', DetailsView.as_view(), name='details'),
 
     path('gear/', GearsView.as_view(), name='gears'),
+    path('log/', LogsView.as_view(), name='logs'),
 ]

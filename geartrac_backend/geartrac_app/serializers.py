@@ -25,3 +25,21 @@ class GearSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'used_by') and obj.used_by:
             return f'{obj.used_by.first_name} {obj.used_by.last_name}'.strip() or obj.used_by.username
         return None
+
+class LogSerializer(serializers.ModelSerializer):
+    gear = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Log
+        fields = ['gear', 'user', 'action', 'timestamp']
+
+    def get_gear(self, obj):
+        if obj.gear.exists():
+            return [gear.name for gear in obj.gear.all()]
+        return []
+
+    def get_user(self, obj):
+        if obj.user:
+            return f'{obj.user.first_name} {obj.user.last_name}'.strip() or obj.user.username
+        return None
