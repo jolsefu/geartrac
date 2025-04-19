@@ -2,6 +2,15 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+def log_access(self):
+    try:
+        position = self.user
+        return position.section in ['editorial', 'managerial', 'executive']
+    except Position.DoesNotExist:
+        return False
+
+User.add_to_class('log_access', log_access)
+
 class Position(models.Model):
     SECTION_CHOICES = [
         ('executive', 'Executive'),
@@ -59,7 +68,7 @@ class Position(models.Model):
     section = models.CharField(
         max_length=20,
         choices=SECTION_CHOICES,
-        default='staff_member',
+        default='staff',
     )
     designation = models.CharField(
         max_length=30,

@@ -213,7 +213,9 @@ class LogsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if not request.user.log_access():
+            return Response({'error': 'You do not have permission to view logs'}, status=status.HTTP_403_FORBIDDEN)
+
         logs = Log.objects.all()
         serializer = LogSerializer(logs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
