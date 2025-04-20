@@ -219,3 +219,11 @@ class LogsView(APIView):
         logs = Log.objects.all()
         serializer = LogSerializer(logs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class SlipsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        slips = Slip.objects.filter(slipped_by=request.user)
+        serializer = SlipSerializer(slips, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
