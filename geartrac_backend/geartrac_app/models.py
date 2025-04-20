@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+
+
 def log_access(self):
     try:
         position = self.user
