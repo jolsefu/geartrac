@@ -132,6 +132,7 @@ class Slip(models.Model):
         null=True,
         blank=True,
     )
+    currently_active = models.BooleanField(default=True)
 
     condition_before = models.CharField(
         max_length=10,
@@ -169,10 +170,16 @@ class Slip(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        for gear in self.gear_borrowed.all():
-            gear.borrowed_by = self.slipped_by
-            gear.borrowed = True
-            gear.save()
+        if self.currently_active:
+            for gear in self.gear_borrowed.all():
+                gear.borrowed_by = self.slipped_by
+                gear.borrowed = True
+                gear.save()
+        else:
+            for gear in self.gear_borrowed.all():
+                gear.borrowed_by = None
+                gear.borrowed = False
+                gear.save()
 
     def __str__(self):
         return f'{self.slipped_by}'
