@@ -224,6 +224,6 @@ class SlipsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        slips = Slip.objects.filter(slipped_by=request.user)
+        slips = Slip.objects.filter(slipped_by=request.user, currently_active=True)
         serializer = SlipSerializer(slips, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
