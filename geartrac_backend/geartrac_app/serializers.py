@@ -43,3 +43,33 @@ class LogSerializer(serializers.ModelSerializer):
         if obj.user:
             return f'{obj.user.first_name} {obj.user.last_name}'.strip() or obj.user.username
         return None
+
+class SlipSerializer(serializers.ModelSerializer):
+    gear_borrowed = serializers.SerializerMethodField()
+    slipped_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Slip
+        fields = [
+            'gear_borrowed',
+            'slipped_by',
+            'condition_before',
+            'condition_after',
+            'borrowed_date',
+            'return_date',
+            'expected_return_date',
+            'section_editor_signature',
+            'circulations_manager_signature',
+            'managing_editor_signature',
+            'editor_in_chief_signature',
+        ]
+
+    def get_gear_borrowed(self, obj):
+        if obj.gear_borrowed.exists():
+            return [gear.name for gear in obj.gear_borrowed.all()]
+        return []
+
+    def get_slipped_by(self, obj):
+        if obj.slipped_by:
+            return f'{obj.slipped_by.first_name} {obj.slipped_by.last_name}'.strip() or obj.user.username
+        return None
