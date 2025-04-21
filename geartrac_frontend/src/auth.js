@@ -10,18 +10,20 @@ import google_keys from '../../google_keys.json'
  *
  */
 
-const api = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+
+
+const auth = axios.create({
+  baseURL: 'http://localhost:8000/auth/',
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
-});
+})
 
 export const isAuthenticated = ref(false)
 export const userDetails = ref({})
 
 const checkAuth = async () => {
   try {
-    const response = await api.get('auth/validate/')
+    const response = await auth.get('validate/')
     isAuthenticated.value = response.status === 200
   } catch (error) {
     isAuthenticated.value = false
@@ -30,7 +32,7 @@ const checkAuth = async () => {
 
 const retrieveDetails = async () => {
   try {
-    const response = await api.get('auth/details/')
+    const response = await auth.get('details/')
     userDetails.value = response.data
   } catch (error) {
     userDetails.value = null
@@ -47,7 +49,7 @@ retrieveDetails()
  */
 
 export async function authLogIn() {
-  await api.get('auth/csrf/');
+  await auth.get('csrf/');
 
   googleSdkLoaded((google) => {
     google.accounts.oauth2
@@ -68,7 +70,7 @@ export async function authLogIn() {
 export async function authLogOut() {
   try {
 
-    const response = await api.post('auth/logout/');
+    const response = await auth.post('logout/');
 
     console.log(response.data);
 
@@ -84,21 +86,19 @@ export async function authLogOut() {
 async function sendCodeToBackend(code) {
   try {
 
-    const response = await api.post('auth/google/', {'code': code});
+    const response = await auth.post('google/', {'code': code});
 
     console.log(response);
 
   } catch (error) {
-
     console.error('Failed to send authorization code:', error);
-
   }
 };
 
 export function authTest() {
   try {
 
-    const response = api.get('auth/protected/')
+    const response = auth.get('validate/')
 
     console.log(response);
 

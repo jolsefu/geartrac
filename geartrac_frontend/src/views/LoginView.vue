@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { authLogIn, authLogOut, authTest } from '@/auth'
+import { authLogIn, authLogOut, authTest, isAuthenticated, userDetails } from '@/auth'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
@@ -23,14 +23,18 @@ setTimeout(() => {
   <transition name="swipe-up">
     <div v-if="isVisible" class="flex justify-center h-screen pt-[8rem] max-w">
       <Card class="w-full sm:w-3/4 md:w-1/2 xl:w-fit h-fit m-4">
-        <CardHeader>
+        <CardHeader v-if="!isAuthenticated">
           <CardTitle>Login to GearTRAC</CardTitle>
           <CardDescription>You must login via carsu.edu.ph emails!</CardDescription>
+        </CardHeader>
+        <CardHeader v-else>
+          <CardTitle>Welcome to GearTRAC, {{ userDetails.first_name }}!</CardTitle>
+          <CardDescription>Logged in as {{ userDetails.email }}</CardDescription>
         </CardHeader>
         <CardContent class="flex gap-1">
           <div class="flex flex-col gap-1">
             <div>
-              <Button @click="authLogIn">
+              <Button v-if="!isAuthenticated" @click="authLogIn">
                 <i class="material-icons">domain</i>
                 Login With @carsu.edu.ph
               </Button>
@@ -38,9 +42,6 @@ setTimeout(() => {
             <div>
               <Button @click="authLogOut" class="!bg-[#ad0000] hover:!bg-[#990000]">Logout</Button>
             </div>
-          </div>
-          <div>
-            <Button @click="authTest">Test Authentication</Button>
           </div>
         </CardContent>
       </Card>

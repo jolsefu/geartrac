@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { isAuthenticated } from './auth'
 
 const isMenuOpen = ref(false)
 
@@ -31,8 +32,11 @@ const toggleMenu = () => {
       </div>
 
       <div class="flex items-center space-x-4 ml-auto">
-        <RouterLink to="/login" class="hidden md:block text-white px-4 py-2 bg-[#3b3b3b] hover:bg-[#505050] rounded-lg transition duration-300">
+        <RouterLink v-if="!isAuthenticated" to="/login" class="hidden md:block text-white px-4 py-2 bg-[#3b3b3b] hover:bg-[#505050] rounded-lg transition duration-300">
           Log In
+        </RouterLink>
+        <RouterLink v-else to="/login" class="hidden md:block text-white px-4 py-2 bg-[#3b3b3b] hover:bg-[#505050] rounded-lg transition duration-300">
+          Profile
         </RouterLink>
 
         <button
@@ -60,8 +64,11 @@ const toggleMenu = () => {
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/login" class="block py-2 px-3 text-white hover:bg-[#3b3b3b] rounded-sm transition duration-300">
+              <RouterLink v-if="!isAuthenticated" to="/login" class="block py-2 px-3 text-white hover:bg-[#3b3b3b] rounded-sm transition duration-300">
                 Log In
+              </RouterLink>
+              <RouterLink v-else to="/login" class="block py-2 px-3 text-white hover:bg-[#3b3b3b] rounded-sm transition duration-300">
+                Profile
               </RouterLink>
             </li>
           </ul>
