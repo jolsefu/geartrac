@@ -1,18 +1,12 @@
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
+import { api } from '@/api'
 
 const isVisible = ref(false)
 
 setTimeout(() => {
   isVisible.value = true
 }, 200)
-
-const api = axios.create({
-  baseURL: 'http://localhost:8000/api/',
-  headers: { 'Content-Type': 'application/json' },
-  withCredentials: true,
-})
 </script>
 
 <template>

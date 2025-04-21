@@ -1,8 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { authLogIn, authLogOut, authTest, isAuthenticated, userDetails } from '@/auth'
+import { authLogIn, authLogOut, isAuthenticated, userDetails } from '@/auth'
 import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   Card,
   CardContent,

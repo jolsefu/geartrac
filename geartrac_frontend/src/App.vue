@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { isAuthenticated } from './auth'
+import { isAuthenticated } from '@/auth'
 
 const isMenuOpen = ref(false)
 
