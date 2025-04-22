@@ -6,10 +6,11 @@ from .models import *
 class GearSerializer(serializers.ModelSerializer):
     owner = serializers.SerializerMethodField()
     used_by = serializers.SerializerMethodField()
+    borrowed_by = serializers.SerializerMethodField()
 
     class Meta:
         model = Gear
-        fields = ['id', 'name', 'used_by', 'unit_description', 'property_number', 'owner', 'used', 'borrowed']
+        fields = ['id', 'name', 'used_by', 'borrowed_by', 'unit_description', 'property_number', 'owner', 'used', 'borrowed']
 
     def get_owner(self, obj):
         if obj.owner:
@@ -19,6 +20,11 @@ class GearSerializer(serializers.ModelSerializer):
     def get_used_by(self, obj):
         if hasattr(obj, 'used_by') and obj.used_by:
             return f'{obj.used_by.first_name} {obj.used_by.last_name}'.strip() or obj.used_by.username
+        return None
+
+    def get_borrowed_by(self, obj):
+        if hasattr(obj, 'borrowed_by') and obj.borrowed_by:
+            return f'{obj.borrowed_by.first_name} {obj.borrowed_by.last_name}'.strip() or obj.borrowed_by.username
         return None
 
 class LogSerializer(serializers.ModelSerializer):
