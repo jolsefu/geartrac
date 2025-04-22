@@ -1,7 +1,7 @@
 <script setup>
-import { ref } from 'vue'
-import { authLogIn, authLogOut, isAuthenticated, userDetails } from '@/auth'
-import { Button } from '@/components/ui/button'
+import { ref } from "vue";
+import { authLogIn, authLogOut, isAuthenticated, userDetails } from "@/auth";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,13 +9,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from "@/components/ui/card";
 
-const isVisible = ref(false)
+const isVisible = ref(false);
 
 setTimeout(() => {
-  isVisible.value = true
-}, 200)
+  isVisible.value = true;
+}, 200);
 </script>
 
 <template>
@@ -39,12 +39,13 @@ setTimeout(() => {
               </Button>
             </div>
             <div>
-              <Button @click="authLogOut" class="!bg-[#ad0000] hover:!bg-[#990000]">Logout</Button>
+              <Button @click="authLogOut" class="!bg-[#ad0000] hover:!bg-[#990000]"
+                >Logout</Button
+              >
             </div>
           </div>
         </CardContent>
       </Card>
-
     </div>
   </transition>
- </template>
+</template>

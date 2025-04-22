@@ -1,11 +1,11 @@
 <script setup>
-import { ref } from 'vue'
-import Authenticate from '../components/Authenticate.vue'
+import { ref } from "vue";
+import Authenticate from "../components/Authenticate.vue";
 
-const isVisible = ref(false)
+const isVisible = ref(false);
 
 setTimeout(() => {
-  isVisible.value = true
+  isVisible.value = true;
 }, 200);
 </script>
 
@@ -15,4 +15,4 @@ setTimeout(() => {
       <Authenticate form-title="Sign Up" />
     </div>
   </transition>
- </template>
+</template>

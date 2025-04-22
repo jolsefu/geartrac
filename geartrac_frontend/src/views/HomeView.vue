@@ -1,19 +1,17 @@
 <script setup>
-import { ref } from 'vue'
+import { ref } from "vue";
 
-const isVisible = ref(false)
+const isVisible = ref(false);
 
 setTimeout(() => {
-  isVisible.value = true
-}, 200)
+  isVisible.value = true;
+}, 200);
 </script>
 
 <template>
   <div class="flex items-center justify-center h-screen text-center flex-col">
     <transition name="swipe-down">
-      <h1 v-if="isVisible" class="text-8xl text-white font-bold">
-        GearTRAC
-      </h1>
+      <h1 v-if="isVisible" class="text-8xl text-white font-bold">GearTRAC</h1>
     </transition>
 
     <transition name="swipe-up">
@@ -24,6 +22,4 @@ setTimeout(() => {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
