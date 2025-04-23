@@ -47,7 +47,7 @@ getGears();
       class="flex items-center justify-center h-screen text-center flex-col"
     >
       <Dialog>
-        <div class="container mx-auto px-4 max-w-4xl mt-16">
+        <div class="container mx-auto px-4 max-w-min mt-16">
           <div
             v-for="gear in gears"
             :key="gear.property_number"
@@ -72,6 +72,7 @@ getGears();
                   @click="currentGear.value = gear"
                 >
                   {{ gear.name }}
+                  <span class="text-[#4e4e4e]"> {{ gear.used || gear.borrowed ? 'Not available' : 'Available' }} </span>
                 </Button>
               </DialogTrigger>
             </h2>
