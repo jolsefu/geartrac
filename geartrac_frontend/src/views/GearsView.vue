@@ -59,6 +59,7 @@ getGears();
                   type="checkbox"
                   :value="gear"
                   @change="handleCheckboxChange(gear.id, $event)"
+                  :disabled="gear.used || gear.borrowed"
                 />
               </label>
             </div>
