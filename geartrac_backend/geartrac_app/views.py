@@ -42,9 +42,9 @@ class GearsView(APIView):
                 return Response({'error': 'Gear not found'}, status=status.HTTP_400_BAD_REQUEST)
 
             if gear.borrowed_by:
-                return Response({'message': f'Gear with ID {id} is already borrowed'}, status=status.HTTP_200_OK)
+                return Response({'message': f'Gear with ID {id} is already borrowed'}, status=status.HTTP_400_BAD_REQUEST)
             if gear.used_by:
-                return Response({'message': f'Gear with ID {id} is currently in use'}, status=status.HTTP_200_OK)
+                return Response({'message': f'Gear with ID {id} is currently in use'}, status=status.HTTP_400_BAD_REQUEST)
 
         gear = Gear.objects.filter(id__in=gear_id)
 
@@ -74,7 +74,9 @@ class GearsView(APIView):
                 g.used_by = request.user
                 g.save()
 
-            Log.objects.create(user=request.user, gear=gear, action=action)
+            log = Log.objects.create(user=request.user, action=action)
+            log.gear.set(gear)
+            log.save()
 
             return Response({'message': 'Gear successfully marked as used'}, status=status.HTTP_200_OK)
 
