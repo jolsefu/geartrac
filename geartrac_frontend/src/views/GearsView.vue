@@ -37,6 +37,28 @@ function handleCheckboxChange(id, event) {
   }
 }
 
+function useGear() {
+  api.post('gear/',
+    {
+      'action': 'use',
+      'gear_id': gearIds.value
+    }
+  ).then(response => {
+    console.log(response);
+  })
+}
+
+function borrowGear() {
+  api.post('gear/',
+    {
+      'action': 'borrow',
+      'gear_id': gearIds.value
+    }
+  ).then(response => {
+    console.log(response)
+  })
+}
+
 getGears();
 </script>
 
@@ -51,11 +73,13 @@ getGears();
           <div class="mb-5 flex justify-center gap-1">
             <Button
               class="bg-green-500 text-black hover:bg-green-600"
+              @click="useGear"
             >
               Use
             </Button>
             <Button
               class="bg-blue-700 text-black hover:bg-blue-800"
+              @click="borrowGear"
             >
               Borrow
             </Button>
