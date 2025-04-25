@@ -13,7 +13,7 @@ import {
 
 const isVisible = ref();
 const gears = ref();
-const gearIds = ref();
+const gearIds = ref([]);
 const currentGear = ref({});
 
 setTimeout(() => {
@@ -48,6 +48,18 @@ getGears();
     >
       <Dialog>
         <div class="container mx-auto px-4 max-w-min mt-16">
+          <div class="mb-5 flex justify-center gap-1">
+            <Button
+              class="bg-green-500 text-black hover:bg-green-600"
+            >
+              Use
+            </Button>
+            <Button
+              class="bg-blue-700 text-black hover:bg-blue-800"
+            >
+              Borrow
+            </Button>
+          </div>
           <div
             v-for="gear in gears"
             :key="gear.property_number"
