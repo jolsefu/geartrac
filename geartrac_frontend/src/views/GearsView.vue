@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, reactive, watch, onMounted } from "vue";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,11 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import Notify from "@/components/Notify.vue"
 
 const isVisible = ref();
 const gears = ref();
 const gearIds = ref([]);
 const currentGear = ref({});
+const notify = reactive({
+  messageTitle: '',
+  message: '',
+});
 
 setTimeout(() => {
   isVisible.value = true;
@@ -44,7 +49,8 @@ function useGear() {
       'gear_id': gearIds.value
     }
   ).then(response => {
-    console.log(response);
+    notify.message = response.data.message;
+    notify.messageTitle = response.status === 200 ? "Success" : "Error";
   })
 }
 
@@ -55,14 +61,19 @@ function borrowGear() {
       'gear_id': gearIds.value
     }
   ).then(response => {
-    console.log(response)
+    notify.message = response.data.message;
+    notify.messageTitle = response.status === 200 ? "Success" : "Error";
   })
 }
 
-getGears();
+onMounted(() => {
+  getGears();
+})
 </script>
 
 <template>
+  <Notify :notify="notify" />
+
   <transition name="swipe-up">
     <div
       v-if="isVisible"
