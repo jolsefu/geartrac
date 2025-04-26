@@ -113,6 +113,18 @@ const toggleMenu = () => {
   transform: translateY(0);
 }
 
+.swipe-down-leave-active {
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+.swipe-down-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+.swipe-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
 .swipe-up-enter-active {
   transition: opacity 1s ease-in-out, transform 1s ease-in-out;
 }
