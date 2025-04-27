@@ -136,4 +136,61 @@ const toggleMenu = () => {
   opacity: 1;
   transform: translateY(0);
 }
+.swipe-up-leave-active {
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+.swipe-up-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+.swipe-up-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.swipe-right-enter-active {
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+.swipe-right-enter-from {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+.swipe-right-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+.swipe-right-leave-active {
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+.swipe-right-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+.swipe-right-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.swipe-left-enter-active {
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+.swipe-left-enter-from {
+  opacity: 0;
+  transform: translateX(10px);
+}
+.swipe-left-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+.swipe-left-leave-active {
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+.swipe-left-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+.swipe-left-leave-to {
+  opacity: 0;
+  transform: translateX(10px);
+}
 </style>
