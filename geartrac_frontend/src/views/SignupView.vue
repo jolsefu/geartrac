@@ -10,9 +10,9 @@ setTimeout(() => {
 </script>
 
 <template>
-  <transition name="swipe-up">
+  <Transition name="swipe-up">
     <div v-if="isVisible" class="flex items-center h-screen pt-[8rem] flex-col">
       <Authenticate form-title="Sign Up" />
     </div>
-  </transition>
+  </Transition>
 </template>

@@ -74,7 +74,7 @@ onMounted(() => {
 <template>
   <Notify :notify="notify" />
 
-  <transition name="swipe-up">
+  <Transition name="swipe-up">
     <div
       v-if="isVisible"
       class="flex items-center justify-center h-screen text-center flex-col"

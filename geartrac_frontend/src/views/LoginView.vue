@@ -19,7 +19,7 @@ setTimeout(() => {
 </script>
 
 <template>
-  <transition name="swipe-up">
+  <Transition name="swipe-up">
     <div v-if="isVisible" class="flex justify-center h-screen pt-[8rem] max-w">
       <Card class="w-full sm:w-3/4 md:w-1/2 xl:w-fit h-fit m-4">
         <CardHeader v-if="!isAuthenticated">
@@ -47,5 +47,5 @@ setTimeout(() => {
         </CardContent>
       </Card>
     </div>
-  </transition>
+  </Transition>
 </template>
