@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, watch, onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Notify from "@/components/Notify.vue"
+import Notify from "@/components/Notify.vue";
 
 const isVisible = ref();
 const gears = ref();
