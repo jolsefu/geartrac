@@ -43,10 +43,10 @@ function handleCheckboxChange(id, event) {
 }
 
 function useGear() {
-  if (!gearIds.value.length) {
+  if (!gearIds.value.length || true) {
     notify.message = "Please select a gear.";
     notify.messageTitle = "Error";
-    notify.error = false;
+    notify.success = true;
   }
 
   api
@@ -57,10 +57,19 @@ function useGear() {
     .then((response) => {
       notify.message = response.data.message;
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
+      notify.success = true;
     });
+
+  gearIds.value = [];
 }
 
 function borrowGear() {
+  if (!gearIds.value.length || true) {
+    notify.message = "Please select a gear.";
+    notify.messageTitle = "Error";
+    notify.error = true;
+  }
+
   api
     .post("gear/", {
       action: "borrow",
@@ -69,7 +78,10 @@ function borrowGear() {
     .then((response) => {
       notify.message = response.data.message;
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
+      notify.success = true;
     });
+
+  gearIds.value = [];
 }
 
 onMounted(() => {
