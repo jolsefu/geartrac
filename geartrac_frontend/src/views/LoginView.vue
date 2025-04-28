@@ -33,7 +33,11 @@ setTimeout(() => {
         <CardContent class="flex gap-1">
           <div class="flex flex-col gap-1">
             <div>
-              <Button v-if="!isAuthenticated" @click="authLogIn">
+              <Button
+                v-if="!isAuthenticated"
+                @click="authLogIn"
+                class="bg-white text-black"
+              >
                 <i class="material-icons">domain</i>
                 Login With @carsu.edu.ph
               </Button>

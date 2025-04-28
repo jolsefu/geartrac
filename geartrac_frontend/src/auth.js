@@ -90,6 +90,8 @@ async function sendCodeToBackend(code) {
 
     console.log(response);
 
+    window.location.href = '/';
+
   } catch (error) {
     console.error('Failed to send authorization code:', error);
   }
