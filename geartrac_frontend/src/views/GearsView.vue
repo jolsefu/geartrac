@@ -17,8 +17,8 @@ const gears = ref();
 const gearIds = ref([]);
 const currentGear = ref({});
 const notify = reactive({
-  messageTitle: '',
-  message: '',
+  messageTitle: "",
+  message: "",
 });
 
 setTimeout(() => {
@@ -43,32 +43,38 @@ function handleCheckboxChange(id, event) {
 }
 
 function useGear() {
-  api.post('gear/',
-    {
-      'action': 'use',
-      'gear_id': gearIds.value
-    }
-  ).then(response => {
-    notify.message = response.data.message;
-    notify.messageTitle = response.status === 200 ? "Success" : "Error";
-  })
+  if (!gearIds.value.length) {
+    notify.message = "Please select a gear.";
+    notify.messageTitle = "Error";
+    notify.error = false;
+  }
+
+  api
+    .post("gear/", {
+      action: "use",
+      gear_id: gearIds.value,
+    })
+    .then((response) => {
+      notify.message = response.data.message;
+      notify.messageTitle = response.status === 200 ? "Success" : "Error";
+    });
 }
 
 function borrowGear() {
-  api.post('gear/',
-    {
-      'action': 'borrow',
-      'gear_id': gearIds.value
-    }
-  ).then(response => {
-    notify.message = response.data.message;
-    notify.messageTitle = response.status === 200 ? "Success" : "Error";
-  })
+  api
+    .post("gear/", {
+      action: "borrow",
+      gear_id: gearIds.value,
+    })
+    .then((response) => {
+      notify.message = response.data.message;
+      notify.messageTitle = response.status === 200 ? "Success" : "Error";
+    });
 }
 
 onMounted(() => {
   getGears();
-})
+});
 </script>
 
 <template>
@@ -82,16 +88,10 @@ onMounted(() => {
       <Dialog>
         <div class="container mx-auto px-4 max-w-min mt-16">
           <div class="mb-5 flex justify-center gap-1">
-            <Button
-              class="bg-green-500 text-black hover:bg-green-600"
-              @click="useGear"
-            >
+            <Button class="bg-green-500 text-black hover:bg-green-600" @click="useGear">
               Use
             </Button>
-            <Button
-              class="bg-blue-700 text-black hover:bg-blue-800"
-              @click="borrowGear"
-            >
+            <Button class="bg-blue-700 text-black hover:bg-blue-800" @click="borrowGear">
               Borrow
             </Button>
           </div>
@@ -120,7 +120,9 @@ onMounted(() => {
                   @click="currentGear.value = gear"
                 >
                   {{ gear.name }}
-                  <span class="text-[#4e4e4e]"> {{ gear.used || gear.borrowed ? 'Not available' : 'Available' }} </span>
+                  <span class="text-[#4e4e4e]">
+                    {{ gear.used || gear.borrowed ? "Not available" : "Available" }}
+                  </span>
                 </Button>
               </DialogTrigger>
             </h2>
@@ -154,5 +156,5 @@ onMounted(() => {
         </DialogContent>
       </Dialog>
     </div>
-  </transition>
+  </Transition>
 </template>
