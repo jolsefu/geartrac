@@ -1,12 +1,14 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { isAuthenticated, userDetails } from "@/auth";
+import { checkAuth, userDetails } from "@/auth";
 
 const isVisibleWelcome = ref(false);
 const isVisibleMain = ref(false);
 
-onMounted(() => {
-  if (isAuthenticated) {
+onMounted(async () => {
+  const authenticated = await checkAuth();
+
+  if (authenticated) {
     setTimeout(() => {
       isVisibleWelcome.value = true;
     }, 300);
@@ -31,7 +33,7 @@ onMounted(() => {
     <Transition name="swipe-down">
       <div v-if="isVisibleWelcome">
         <h1 class="text-xl text-white font-bold">
-          Welcome, {{ userDetails.first_name }}
+          Welcome, <span class="text-gray-400">{{ userDetails.first_name }}</span>
         </h1>
       </div>
     </Transition>

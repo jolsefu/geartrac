@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -36,7 +35,7 @@ setTimeout(() => {
               <Button
                 v-if="!isAuthenticated"
                 @click="authLogIn"
-                class="bg-white text-black"
+                class="bg-white text-black hover:bg-[#cccccc]"
               >
                 <i class="material-icons">domain</i>
                 Login With @carsu.edu.ph
