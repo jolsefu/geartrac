@@ -15,7 +15,7 @@ watch(
   props.notify,
   (newNotify) => {
     if (newNotify.message && newNotify.messageTitle) {
-      notifications.value.push({ ...newNotify });
+      notifications.value.unshift({ ...newNotify });
 
       props.notify.success = false;
       props.notify.error = false;

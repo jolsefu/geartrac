@@ -46,7 +46,7 @@ function useGear() {
   if (!gearIds.value.length || true) {
     notify.message = "Please select a gear.";
     notify.messageTitle = "Error";
-    notify.success = true;
+    notify.error = true;
   }
 
   api
