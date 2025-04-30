@@ -43,7 +43,7 @@ function handleCheckboxChange(id, event) {
 }
 
 function useGear() {
-  if (!gearIds.value.length || true) {
+  if (!gearIds.value.length) {
     notify.message = "Please select a gear.";
     notify.messageTitle = "Error";
     notify.error = true;
@@ -58,13 +58,20 @@ function useGear() {
       notify.message = response.data.message;
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
       notify.success = true;
-    });
 
-  gearIds.value = [];
+      gearIds.value = [];
+
+      window.location.reload();
+    })
+    .catch((error) => {
+      notify.message = error.response.data.error;
+      notify.messageTitle = error.response.status === 200 ? "Success" : "Error";
+      notify.error = true;
+    });
 }
 
 function borrowGear() {
-  if (!gearIds.value.length || true) {
+  if (!gearIds.value.length) {
     notify.message = "Please select a gear.";
     notify.messageTitle = "Error";
     notify.error = true;
@@ -79,9 +86,16 @@ function borrowGear() {
       notify.message = response.data.message;
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
       notify.success = true;
-    });
 
-  gearIds.value = [];
+      gearIds.value = [];
+
+      window.location.reload();
+    })
+    .catch((error) => {
+      notify.message = error.response.data.error;
+      notify.messageTitle = error.response.status === 200 ? "Success" : "Error";
+      notify.error = true;
+    });
 }
 
 onMounted(() => {
