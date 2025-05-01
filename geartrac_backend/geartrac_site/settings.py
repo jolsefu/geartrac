@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'geartrac_app',
+    'geartrac_auth',
 
     'corsheaders',
 
