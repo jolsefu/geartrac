@@ -117,3 +117,19 @@ class DetailsView(APIView):
     def get(self, request):
         user = request.user
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+class PermissionLevelView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        response = { 'level': 0 }
+
+        section_levels = {
+            'staff': 1,
+            'editorial': 2,
+            'managerial': 3,
+            'executive': 3
+        }
+        response['level'] = section_levels.get(request.user.section, 0)
+
+        return Response(response, status=status.HTTP_200_OK)
