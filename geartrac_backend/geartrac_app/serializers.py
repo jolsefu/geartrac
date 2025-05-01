@@ -10,7 +10,17 @@ class GearSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Gear
-        fields = ['id', 'name', 'used_by', 'borrowed_by', 'unit_description', 'property_number', 'owner', 'used', 'borrowed']
+        fields = [
+            'id',
+            'name',
+            'used_by',
+            'borrowed_by',
+            'unit_description',
+            'property_number',
+            'owner',
+            'used',
+            'borrowed',
+        ]
 
     def get_owner(self, obj):
         if obj.owner:

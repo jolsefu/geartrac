@@ -3,6 +3,9 @@ from django.contrib.auth.models import User
 
 
 
+User.add_to_class('section', property(lambda self: self.user.section if hasattr(self, 'user') else None))
+User.add_to_class('designation', property(lambda self: self.user.designation if hasattr(self, 'user') else None))
+
 class Position(models.Model):
     SECTION_CHOICES = [
         ('executive', 'Executive'),
