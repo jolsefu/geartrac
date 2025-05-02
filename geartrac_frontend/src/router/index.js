@@ -5,6 +5,7 @@ import SignupView from '@/views/SignupView.vue'
 import AboutView from '@/views/AboutView.vue'
 import GearsView from '@/views/GearsView.vue'
 import BorrowView from '@/views/BorrowView.vue'
+import SlipsView from '@/views/SlipsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +39,11 @@ const router = createRouter({
       path: '/borrow',
       name: 'borrow',
       component: BorrowView,
+    },
+    {
+      path: '/slips',
+      name: 'slips',
+      component: SlipsView,
     },
   ],
 })

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { isAuthenticated } from "@/auth";
+import { isAuthenticated, userPermissionLevel } from "@/auth";
 
 const isMenuOpen = ref(false);
 
@@ -55,6 +55,14 @@ setTimeout(() => {
                 class="text-white hover:-translate-y-1 transition duration-300 ease-in-out"
               >
                 Borrow
+              </RouterLink>
+            </li>
+            <li v-if="isAuthenticated && userPermissionLevel >= 2">
+              <RouterLink
+                to="/slips"
+                class="text-white hover:-translate-y-1 transition duration-300 ease-in-out"
+              >
+                Slips
               </RouterLink>
             </li>
           </ul>
