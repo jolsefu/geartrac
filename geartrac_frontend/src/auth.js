@@ -18,6 +18,7 @@ const auth = axios.create({
 
 export const isAuthenticated = ref(false)
 export const userDetails = ref({})
+export const userPermissionLevel = ref(0)
 
 export const checkAuth = async () => {
   try {
@@ -39,8 +40,18 @@ const retrieveDetails = async () => {
   }
 }
 
+const retrievePermissionLevel = async () => {
+  try {
+    const response = await auth.get('permission/')
+    userPermissionLevel.value = response.data.level
+  } catch (error) {
+    userPermissionLevel.value = 0
+  }
+}
+
 checkAuth()
 retrieveDetails()
+retrievePermissionLevel()
 
 /**
  *
