@@ -81,6 +81,8 @@ class SlipSerializer(serializers.ModelSerializer):
         return []
 
     def get_slipped_by(self, obj):
-        if obj.slipped_by:
-            return f'{obj.slipped_by.first_name} {obj.slipped_by.last_name}'.strip() or obj.user.username
+        if obj.slipped_by and obj.slipped_by.first_name and obj.slipped_by.last_name:
+            return f'{obj.slipped_by.first_name} {obj.slipped_by.last_name}'.strip()
+        elif obj.slipped_by.username:
+            return f'{obj.slipped_by.username}'
         return None
