@@ -20,7 +20,7 @@ setTimeout(() => {
 <template>
   <Transition name="swipe-up">
     <div v-if="isVisible" class="flex justify-center h-screen pt-[8rem] max-w">
-      <Card class="w-full sm:w-3/4 md:w-1/2 xl:w-fit h-fit m-4">
+      <Card class="w-fit h-fit">
         <CardHeader v-if="!isAuthenticated">
           <CardTitle>Login to GearTRAC</CardTitle>
           <CardDescription>You must login via carsu.edu.ph emails!</CardDescription>
