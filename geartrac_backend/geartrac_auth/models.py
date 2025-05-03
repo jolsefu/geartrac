@@ -73,4 +73,4 @@ class Position(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.user.email} - {self.section} - {self.designation}'
+        return f'{self.user.email if self.user.email else self.user.username} - {self.section} - {self.designation}'
