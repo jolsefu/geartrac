@@ -17,6 +17,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from .serializers import *
 from .models import *
+from geartrac_auth.models import Position
 
 
 
@@ -128,6 +129,72 @@ class SlipsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        slips = Slip.objects.filter(slipped_by=request.user, currently_active=True)
-        serializer = SlipSerializer(slips, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        position = Position.objects.get(user=request.user)
+        section = position.section
+        designation = position.designation
+
+        if section == 'staff':
+            slips = Slip.objects.filter(slipped_by=request.user, currently_active=True)
+            serializer = SlipSerializer(slips, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif section == 'editorial':
+            staff_users = []
+
+            if designation == "senior_videojournalist":
+                staff_positions = Position.objects.filter(
+                    section='staff',
+                    designation="videojournalist"
+                )
+                staff_users = [pos.user for pos in staff_positions]
+            elif designation == "senior_photojournalist":
+                staff_positions = Position.objects.filter(
+                    section='staff',
+                    designation="photojournalist"
+                )
+                staff_users = [pos.user for pos in staff_positions]
+            elif designation == "graphics_design_director":
+                staff_positions = Position.objects.filter(
+                    section='staff',
+                    designation='layout_artist'
+                )
+            elif designation == "senior_illustrator":
+                staff_positions = Position.objects.filter(
+                    section='staff',
+                    designation='illustrator'
+                )
+
+            slips = Slip.objects.filter(slipped_by__in=staff_users, currently_active=True)
+            serializer = SlipSerializer(slips, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif section in ['managerial', 'executive']:
+            slips = []
+
+            if section == 'managerial' and designation == 'circulations_manager':
+                slips = Slip.objects.filter(
+                    currently_active=True,
+                    section_editor_signature=True,
+                    circulations_manager_signature=False,
+                )
+            elif section == 'managerial' and designation == 'managing_editor':
+                slips = Slip.objects.filter(
+                    currently_active=True,
+                    section_editor_signature=True,
+                    circulations_manager_signature=True,
+                    managing_editor_signature=False,
+                )
+            elif section == 'executive' and designation == 'editor_in_chief':
+                slips = Slip.objects.filter(
+                    currently_active=True,
+                    section_editor_signature=True,
+                    circulations_manager_signature=True,
+                    managing_editor_signature=True,
+                    editor_in_chief_signature=False,
+                )
+
+            serializer = SlipSerializer(slips, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
