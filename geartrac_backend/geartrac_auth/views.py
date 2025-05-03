@@ -87,7 +87,6 @@ class GoogleLogin(SocialLoginView):
                 httponly=True,
                 secure=True,
                 samesite='Lax',
-                max_age=3600,
             )
 
         return response
