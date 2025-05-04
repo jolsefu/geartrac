@@ -11,6 +11,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Notify from "@/components/Notify.vue";
+import "cally";
+
+const returnDatePicked = ref();
+const conditionBeforePicked = ref();
 
 const isVisible = ref();
 const gears = ref();
@@ -47,6 +51,8 @@ function useGear() {
     notify.message = "Please select a gear.";
     notify.messageTitle = "Error";
     notify.error = true;
+
+    return;
   }
 
   api
@@ -70,17 +76,35 @@ function useGear() {
     });
 }
 
-function borrowGear() {
+function handleConditionBefore(e) {
+  const condition = e.target.innerText;
+  conditionBeforePicked.value = condition;
+  document.getElementById("condition-popover").hidePopover();
+}
+
+function handleBorrow() {
   if (!gearIds.value.length) {
     notify.message = "Please select a gear.";
     notify.messageTitle = "Error";
     notify.error = true;
+
+    return;
+  } else {
+    const modal = document.getElementById("borrow_modal");
+    modal.showModal();
   }
+}
+
+function borrowGear() {
+  const returnDate = new Date(returnDatePicked.value);
+  returnDate.setHours(23, 59, 0);
 
   api
     .post("gear/", {
       action: "borrow",
       gear_id: gearIds.value,
+      expected_return_date: returnDate,
+      condition_before: conditionBeforePicked.value,
     })
     .then((response) => {
       notify.message = response.data.message;
@@ -117,7 +141,10 @@ onMounted(() => {
             <Button class="bg-green-500 text-black hover:bg-green-600" @click="useGear">
               Use
             </Button>
-            <Button class="bg-blue-700 text-black hover:bg-blue-800" @click="borrowGear">
+            <Button
+              class="bg-blue-700 text-black hover:bg-blue-800"
+              @click="handleBorrow"
+            >
               Borrow
             </Button>
           </div>
@@ -181,6 +208,81 @@ onMounted(() => {
           </DialogHeader>
         </DialogContent>
       </Dialog>
+
+      <dialog id="borrow_modal" class="modal">
+        <div class="modal-box">
+          <div class="font-bold">Expected Return Date</div>
+          <div class="modal-action">
+            <button
+              popoverTarget="cally-popover1"
+              className="input input-border"
+              id="cally1"
+              style="anchorname: --cally1"
+            >
+              {{ returnDatePicked ? returnDatePicked : "Pick A Date" }}
+            </button>
+            <div
+              popover
+              id="cally-popover1"
+              className="dropdown bg-base-100 rounded-box shadow-lg"
+              style="positionanchor: --cally1"
+            >
+              <calendar-date
+                class="cally"
+                :onchange="(e) => (returnDatePicked = e.target.value)"
+              >
+                <svg
+                  aria-label="Previous"
+                  className="fill-current size-4"
+                  slot="previous"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M15.75 19.5 8.25 12l7.5-7.5"></path>
+                </svg>
+                <svg
+                  aria-label="Next"
+                  className="fill-current size-4"
+                  slot="next"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
+                </svg>
+                <calendar-month></calendar-month>
+              </calendar-date>
+            </div>
+
+            <button
+              class="btn btn-info"
+              popovertarget="condition-popover"
+              style="anchor-name: --anchor-1"
+            >
+              {{ conditionBeforePicked || "Condition Before" }}
+            </button>
+            <ul
+              class="dropdown menu w-52 rounded-box bg-base-100 shadow-sm"
+              popover
+              id="condition-popover"
+              style="position-anchor: --anchor-1"
+            >
+              <li><a @click="(e) => handleConditionBefore(e)">Great</a></li>
+              <li><a @click="(e) => handleConditionBefore(e)">Good</a></li>
+              <li><a @click="(e) => handleConditionBefore(e)">Bad</a></li>
+              <li><a @click="(e) => handleConditionBefore(e)">Broken</a></li>
+            </ul>
+
+            <div>
+              <button class="btn btn-success" @click="borrowGear">Submit</button>
+            </div>
+            <div>
+              <form method="dialog">
+                <button class="btn btn-error">Close</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </dialog>
     </div>
   </Transition>
 </template>
