@@ -25,14 +25,14 @@ setTimeout(() => {
   isVisible.value = true;
 }, 200);
 
-const getGears = async () => {
+async function getGears() {
   try {
     const response = await api.get("gear/");
     gears.value = response.data;
   } catch (error) {
     console.log(error);
   }
-};
+}
 
 function handleCheckboxChange(id, event) {
   if (event.target.checked) {
