@@ -57,7 +57,7 @@ setTimeout(() => {
                 Borrow
               </RouterLink>
             </li>
-            <li v-if="isAuthenticated && userPermissionLevel >= 2">
+            <li v-if="isAuthenticated">
               <RouterLink
                 to="/slips"
                 class="text-white hover:-translate-y-1 transition duration-300 ease-in-out"
