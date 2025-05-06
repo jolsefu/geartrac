@@ -143,24 +143,20 @@ class SlipsView(APIView):
 
             if designation == 'senior_videojournalist':
                 staff_positions = Position.objects.filter(
-                    section='staff',
                     designation__in=['videojournalist', 'senior_videojournalist']
                 )
                 staff_users = [pos.user for pos in staff_positions]
             elif designation == 'senior_photojournalist':
                 staff_positions = Position.objects.filter(
-                    section='staff',
                     designation__in=['photojournalist', 'senior_photojournalist']
                 )
                 staff_users = [pos.user for pos in staff_positions]
             elif designation == 'graphics_design_director':
                 staff_positions = Position.objects.filter(
-                    section='staff',
                     designation__in=['layout_artist', 'graphics_design_director']
                 )
             elif designation == 'senior_illustrator':
                 staff_positions = Position.objects.filter(
-                    section='staff',
                     designation__in=['illustrator', 'senior_illustrator']
                 )
 
