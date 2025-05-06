@@ -32,11 +32,13 @@ def get_csrf_token(request):
     Create only accounts that ends with carsu.edu.ph
 """
 
-@receiver(post_save, sender=User)
-def check_email_domain(sender, instance, created, **kwargs):
-    if created and not instance.email.endswith("@carsu.edu.ph"):
-        instance.delete()
-        raise ValidationError("Only @carsu.edu.ph emails are allowed.")
+
+# DISABLED FOR TEST USER CREATION
+# @receiver(post_save, sender=User)
+# def check_email_domain(sender, instance, created, **kwargs):
+#     if created and not instance.email.endswith("@carsu.edu.ph"):
+#         instance.delete()
+#         raise ValidationError("Only @carsu.edu.ph emails are allowed.")
 
 """
     GoogleOAuth2CLient and GoogleLogin(SocialLoginView)

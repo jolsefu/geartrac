@@ -141,27 +141,27 @@ class SlipsView(APIView):
         elif section == 'editorial':
             staff_users = []
 
-            if designation == "senior_videojournalist":
+            if designation == 'senior_videojournalist':
                 staff_positions = Position.objects.filter(
                     section='staff',
-                    designation="videojournalist"
+                    designation__in=['videojournalist', 'senior_videojournalist']
                 )
                 staff_users = [pos.user for pos in staff_positions]
-            elif designation == "senior_photojournalist":
+            elif designation == 'senior_photojournalist':
                 staff_positions = Position.objects.filter(
                     section='staff',
-                    designation="photojournalist"
+                    designation__in=['photojournalist', 'senior_photojournalist']
                 )
                 staff_users = [pos.user for pos in staff_positions]
-            elif designation == "graphics_design_director":
+            elif designation == 'graphics_design_director':
                 staff_positions = Position.objects.filter(
                     section='staff',
-                    designation='layout_artist'
+                    designation__in=['layout_artist', 'graphics_design_director']
                 )
-            elif designation == "senior_illustrator":
+            elif designation == 'senior_illustrator':
                 staff_positions = Position.objects.filter(
                     section='staff',
-                    designation='illustrator'
+                    designation__in=['illustrator', 'senior_illustrator']
                 )
 
             slips = Slip.objects.filter(slipped_by__in=staff_users, currently_active=True)
@@ -198,3 +198,6 @@ class SlipsView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+    def put(self, request):
+        return Response()
