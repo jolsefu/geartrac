@@ -84,11 +84,27 @@ class GearsView(APIView):
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
-        slip_id = request.data.get('slip_id')
         action = request.data.get('action')
 
-        if not slip_id or not action:
-            return Response({'error': 'Slip ID and action are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not action:
+            return Response({'error': 'Action is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if action == 'unuse':
+            gear_id = request.data.get('gear_id')
+
+            if not gear_id:
+                return Response({'error': 'Provide a gear_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+            gear = Gear.objects.get(id=gear_id)
+            gear.used_by = None
+            gear.save()
+
+            return Response({'message': 'Gear successfully marked as unused.'}, status=status.HTTP_200_OK)
+
+        slip_id = request.data.get('slip_id')
+
+        if not slip_id:
+            return Response({'error': 'Slip ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             slip = Slip.objects.get(id=slip_id)
