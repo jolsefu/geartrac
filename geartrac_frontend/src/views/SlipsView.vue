@@ -58,11 +58,22 @@ onMounted(() => {
           </div>
         </div>
 
-        <DialogContent class="sm:max-w-[425px]">
-          <DialogHeader class="flex">
+        <DialogContent class="sm:max-w-[600px] flex">
+          <DialogHeader class="flex flex-col justify-center items-center">
             <div class="flex justify-center">
               <DialogTitle> Borrower's Slip by {{ currentSlip.slipped_by }} </DialogTitle>
             </div>
+
+            <DialogDescription>
+              <div>Condition Before: {{ currentSlip.condition_before }}</div>
+              <div>
+                Borrowed Date: {{ new Date(currentSlip.borrowed_date).toLocaleString() }}
+              </div>
+              <div>
+                Expected Return Date:
+                {{ new Date(currentSlip.expected_return_date).toLocaleString() }}
+              </div>
+            </DialogDescription>
 
             <div class="justify-center flex">
               <details class="dropdown">
@@ -76,18 +87,108 @@ onMounted(() => {
                 </ul>
               </details>
             </div>
-
-            <DialogDescription>
-              <div>Condition Before: {{ currentSlip.condition_before }}</div>
-              <div>
-                Borrowed Date: {{ new Date(currentSlip.borrowed_date).toLocaleString() }}
-              </div>
-              <div>
-                Expected Return Date:
-                {{ new Date(currentSlip.expected_return_date).toLocaleString() }}
-              </div>
-            </DialogDescription>
           </DialogHeader>
+
+          <div class="ml-5">
+            <ul class="timeline timeline-vertical timeline-compact">
+              <li>
+                <div class="timeline-start timeline-box">Section Editor</div>
+                <div class="timeline-middle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    class="h-5 w-5"
+                    :class="{ 'text-success': currentSlip.section_editor_signature }"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <hr :class="{ 'bg-success': currentSlip.section_editor_signature }" />
+              </li>
+              <li>
+                <hr :class="{ 'bg-success': currentSlip.section_editor_signature }" />
+                <div class="timeline-start timeline-box">Circulations Manager</div>
+                <div class="timeline-middle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    class="h-5 w-5"
+                    :class="{
+                      'text-success': currentSlip.circulations_manager_signature,
+                    }"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <hr
+                  :class="{ 'bg-success': currentSlip.circulations_manager_signature }"
+                />
+              </li>
+              <li>
+                <hr
+                  :class="{ 'bg-success': currentSlip.circulations_manager_signature }"
+                />
+                <div class="timeline-start timeline-box">Managing Editor</div>
+                <div class="timeline-middle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    class="h-5 w-5"
+                    :class="{
+                      'text-success': currentSlip.managing_editor_signature,
+                    }"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <hr
+                  :class="{
+                    'bg-success': currentSlip.managing_editor_signature,
+                  }"
+                />
+              </li>
+              <li>
+                <hr
+                  :class="{
+                    'bg-success': currentSlip.managing_editor_signature,
+                  }"
+                />
+                <div class="timeline-start timeline-box">Editor-in-Chief</div>
+                <div class="timeline-middle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    class="h-5 w-5"
+                    :class="{
+                      'text-success': currentSlip.editor_in_chief_signature,
+                    }"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </li>
+            </ul>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
