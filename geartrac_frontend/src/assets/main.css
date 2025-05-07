@@ -7,7 +7,7 @@
 
 @plugin 'daisyui' {
     themes: all;
-};
+}
 
 :root {
     --primary-color: #181818;
