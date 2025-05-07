@@ -1,5 +1,6 @@
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from allauth.socialaccount.providers.oauth2.client import OAuth2Error
 from dj_rest_auth.registration.views import SocialLoginView
 
 from rest_framework.views import APIView
@@ -17,6 +18,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
+
+import jwt
 
 
 """
@@ -71,8 +74,30 @@ class CustomGoogleOAuth2Client(OAuth2Client):
             basic_auth,
         )
 
+# https://www.reddit.com/r/django/comments/11eswma/djrestauth_google_login_help_needed_getting/
+# ????? weird bug
+
+class CustomGoogleOAuth2Adapter(GoogleOAuth2Adapter):
+    def complete_login(self, request, app, token, response, **kwargs):
+        try:
+            identity_data = jwt.decode(
+                response["id_token"],
+                options={
+                    "verify_signature": False,
+                    "verify_iss": True,
+                    "verify_aud": True,
+                    "verify_exp": True,
+                },
+                issuer=self.id_token_issuer,
+                audience=app.client_id,
+            )
+        except jwt.PyJWTError as e:
+            raise OAuth2Error("Invalid id_token") from e
+        login = self.get_provider().sociallogin_from_response(request, identity_data)
+        return login
+
 class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
+    adapter_class = CustomGoogleOAuth2Adapter
     callback_url = 'postmessage'
     client_class = CustomGoogleOAuth2Client
 
