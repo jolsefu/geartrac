@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { api } from "@/api";
+import { userDetails } from "@/auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -68,6 +69,26 @@ function useGear() {
       gearIds.value = [];
 
       window.location.reload();
+    })
+    .catch((error) => {
+      notify.message = error.response.data.error;
+      notify.messageTitle = error.response.status === 200 ? "Success" : "Error";
+      notify.error = true;
+    });
+}
+
+function unuseGear(gear_id) {
+  api
+    .put("gear/", {
+      action: "unuse",
+      gear_id: gear_id,
+    })
+    .then((response) => {
+      notify.message = response.data.message;
+      notify.messageTitle = response.status === 200 ? "Success" : "Error";
+      notify.success = true;
+
+      getGears();
     })
     .catch((error) => {
       notify.message = error.response.data.error;
@@ -205,6 +226,21 @@ onMounted(() => {
                 Borrowed by: {{ currentGear.value.borrowed_by }}
               </div>
             </DialogDescription>
+
+            <div v-if="currentGear.value.used_by">
+              <Button
+                id="unusedButton"
+                class="bg-red-500 text-black hover:bg-red-600 w-fit mt-4"
+                v-if="
+                  !currentGear.value.used_by.localeCompare(
+                    `${userDetails.first_name} ${userDetails.last_name}`
+                  )
+                "
+                @click="unuseGear(currentGear.value.id)"
+              >
+                Mark as unused
+              </Button>
+            </div>
           </DialogHeader>
         </DialogContent>
       </Dialog>
