@@ -5,7 +5,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@plugin 'daisyui';
+@plugin 'daisyui' {
+    themes: all;
+};
 
 :root {
     --primary-color: #181818;
