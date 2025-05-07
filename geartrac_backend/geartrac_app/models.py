@@ -123,6 +123,13 @@ class Slip(models.Model):
                 gear.borrowed = False
                 gear.save()
 
+    def delete(self, *args, **kwargs):
+        for gear in self.gear_borrowed.all():
+            gear.borrowed_by = None
+            gear.borrowed = False
+            gear.save()
+        super().delete(*args, **kwargs)
+
     def __str__(self):
         return f'{self.slipped_by}'
 
