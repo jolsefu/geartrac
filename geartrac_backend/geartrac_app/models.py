@@ -102,14 +102,7 @@ class Slip(models.Model):
         related_name='gear_borrowed',
     )
 
-    slip_id = models.CharField(max_length=8, unique=True)
-
     def save(self, *args, **kwargs):
-        if not self.slip_id:
-            year = timezone.now().year
-            super().save(*args, **kwargs)
-            self.slip_id = f'{year}-{str(self.id).zfill(3)}'
-
         super().save(*args, **kwargs)
 
         if self.currently_active:
