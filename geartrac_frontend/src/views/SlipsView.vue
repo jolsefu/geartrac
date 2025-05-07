@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted } from "vue";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
+import { userPermissionLevel } from "@/auth";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,11 @@ import Notify from "@/components/Notify.vue";
 const isVisible = ref(false);
 const slips = ref([]);
 const currentSlip = ref(false);
+const conditionAfter = ref();
+const notify = reactive({
+  messageTitle: "",
+  message: "",
+});
 
 setTimeout(() => {
   isVisible.value = true;
@@ -29,39 +35,114 @@ async function getSlips() {
   }
 }
 
+function acceptSlip(slip_id) {
+  api
+    .put("slip/", {
+      action: "accept",
+      slip_id: slip_id,
+    })
+    .then((response) => {
+      notify.message = response.data.message;
+      notify.messageTitle = response.status === 200 ? "Success" : "Error";
+      notify.success = true;
+    })
+    .catch((error) => {
+      notify.message = error.response.data.error;
+      notify.messageTitle = error.response.status === 200 ? "Success" : "Error";
+      notify.error = true;
+    });
+}
+
+function returnSlip(slip_id) {
+  api
+    .put("slip/", {
+      action: "return",
+      slip_id: slip_id,
+    })
+    .then((response) => {
+      notify.message = response.data.message;
+      notify.messageTitle = response.status === 200 ? "Success" : "Error";
+      notify.success = true;
+    })
+    .catch((error) => {
+      notify.message = error.response.data.error;
+      notify.messageTitle = error.response.status === 200 ? "Success" : "Error";
+      notify.error = true;
+    });
+}
+
+function acknowledgeReturn(slip_id) {
+  api
+    .put("slip/", {
+      action: "acknowledge_return",
+      slip_id: slip_id,
+      condition_after: conditionAfter.value,
+    })
+    .then((response) => {
+      notify.message = response.data.message;
+      notify.messageTitle = response.status === 200 ? "Success" : "Error";
+      notify.success = true;
+    })
+    .catch((error) => {
+      notify.message = error.response.data.error;
+      notify.messageTitle = error.response.status === 200 ? "Success" : "Error";
+      notify.error = true;
+    });
+}
+
+function handleConditionAfter(e) {
+  const condition = e.target.innerText;
+  conditionAfter.value = condition;
+  document.getElementById("condition-popover").hidePopover();
+}
+
 onMounted(() => {
   getSlips();
 });
 </script>
 
 <template>
+  <Notify :notify="notify" />
+
   <Transition name="swipe-up">
     <div
       v-if="isVisible"
       class="flex items-center justify-center h-screen text-center flex-col"
     >
+      <h3 class="text-2xl" v-if="!slips.length">No slips!</h3>
       <Dialog>
-        <div class="container mx-auto px-4 w-fit mt-16">
-          <div v-for="slip in slips" class="mb-4 p-4 border rounded shadow flex flex-col">
-            <div>{{ new Date(slip.borrowed_date).toLocaleString() }}</div>
-
-            <h2>
-              <DialogTrigger as-child>
-                <Button
-                  class="bg-white text-black hover:bg-[#cccccc] hover:text-black"
-                  @click="currentSlip = slip"
-                >
-                  {{ slip.slipped_by }}
-                </Button>
-              </DialogTrigger>
-            </h2>
+        <div class="container mx-auto px-4 w-fit mt-2">
+          <div v-for="slip in slips" class="mb-4 p-4 border rounded shadow flex">
+            <div class="flex justify-center items-center flex-col">
+              <div>
+                {{ slip.for_return ? "(For Return)" : "" }}
+              </div>
+              <div>
+                Slip #{{ new Date().getFullYear() }}-{{
+                  slip.id.toString().padStart(3, "0")
+                }}
+              </div>
+            </div>
+            <div class="border-l h-12 mx-4"></div>
+            <div class="flex justify-center items-center">
+              <h2>
+                <DialogTrigger as-child>
+                  <Button
+                    class="bg-white text-black hover:bg-[#cccccc] hover:text-black"
+                    @click="currentSlip = slip"
+                  >
+                    View More
+                  </Button>
+                </DialogTrigger>
+              </h2>
+            </div>
           </div>
         </div>
 
         <DialogContent class="sm:max-w-[600px] flex">
           <DialogHeader class="flex flex-col justify-center items-center">
-            <div class="flex justify-center">
-              <DialogTitle> Borrower's Slip by {{ currentSlip.slipped_by }} </DialogTitle>
+            <div class="flex mb-3">
+              <DialogTitle> {{ currentSlip.slipped_by }} </DialogTitle>
             </div>
 
             <DialogDescription>
@@ -75,7 +156,7 @@ onMounted(() => {
               </div>
             </DialogDescription>
 
-            <div class="justify-center flex">
+            <div class="mt-5">
               <details class="dropdown">
                 <summary class="btn m-1">View Borrowed Gear</summary>
                 <ul
@@ -86,6 +167,47 @@ onMounted(() => {
                   </li>
                 </ul>
               </details>
+
+              <button
+                v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
+                class="btn btn-success"
+                @click="acceptSlip(currentSlip.id)"
+              >
+                Accept Slip
+              </button>
+              <button
+                v-if="currentSlip.editor_in_chief_signature && userPermissionLevel == 1"
+                class="btn btn-info"
+                @click="returnSlip(currentSlip.id)"
+              >
+                Return
+              </button>
+              <button
+                v-if="userPermissionLevel >= 2 && currentSlip.for_return"
+                class="btn btn-info"
+                @click="acknowledgeReturn(currentSlip.id)"
+              >
+                Accept Return
+              </button>
+
+              <button
+                class="btn btn-info"
+                popovertarget="condition-popover"
+                style="anchor-name: --anchor-1"
+              >
+                {{ conditionAfter || "Condition After" }}
+              </button>
+              <ul
+                class="dropdown menu w-52 rounded-box bg-base-100 shadow-sm"
+                popover
+                id="condition-popover"
+                style="position-anchor: --anchor-1"
+              >
+                <li><a @click="(e) => handleConditionAfter(e)">Great</a></li>
+                <li><a @click="(e) => handleConditionAfter(e)">Good</a></li>
+                <li><a @click="(e) => handleConditionAfter(e)">Bad</a></li>
+                <li><a @click="(e) => handleConditionAfter(e)">Broken</a></li>
+              </ul>
             </div>
           </DialogHeader>
 

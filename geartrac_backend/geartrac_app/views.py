@@ -150,7 +150,7 @@ class SlipsView(APIView):
         designation = position.designation
 
         if section == 'staff':
-            slips = Slip.objects.filter(slipped_by=request.user, currently_active=True)
+            slips = Slip.objects.filter(slipped_by=request.user, currently_active=True, for_return=False)
             serializer = SlipSerializer(slips, many=True)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -176,7 +176,7 @@ class SlipsView(APIView):
                     designation__in=['illustrator', 'senior_illustrator']
                 )
 
-            slips = Slip.objects.filter(slipped_by__in=staff_users, currently_active=True)
+            slips = Slip.objects.filter(slipped_by__in=staff_users, currently_active=True, section_editor_signature=False)
             serializer = SlipSerializer(slips, many=True)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -188,7 +188,7 @@ class SlipsView(APIView):
                     currently_active=True,
                     section_editor_signature=True,
                     circulations_manager_signature=False,
-                )
+                ) | Slip.objects.filter(currently_active=False, for_return=True)
             elif section == 'managerial' and designation == 'managing_editor':
                 slips = Slip.objects.filter(
                     currently_active=True,
@@ -212,4 +212,49 @@ class SlipsView(APIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
     def put(self, request):
-        return Response()
+        position = Position.objects.get(user=request.user)
+        section = position.section
+        designation = position.designation
+
+        action = request.data.get('action')
+        slip_id = request.data.get('slip_id')
+        slip = Slip.objects.get(id=slip_id)
+
+        if action == 'acknowledge_return':
+            condition_after = request.data.get('condition_after')
+
+            if not condition_after:
+                return Response({'error': 'Condition after is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            slip.for_return = False
+            slip.return_date = timezone.now()
+            slip.condition_after = condition_after
+            slip.save()
+
+            log = Log.objects.create(user=request.user, action=action)
+            log.gear.set(slip.gear_borrowed)
+            log.save()
+
+            return Response({'message': 'Gear successfully returned'}, status=status.HTTP_200_OK)
+        elif action == 'return':
+            slip.currently_active = False
+            slip.for_return = True
+
+            slip.save()
+
+            return Response({'message': 'Slip is marked for return.'}, status=status.HTTP_200_OK)
+        elif action == 'accept':
+            if section == 'editorial':
+                slip.section_editor_signature = True
+            elif section == 'managerial' and designation == 'circulations_manager':
+                slip.circulations_manager_signature = True
+            elif section == 'managerial' and designation == 'managing_editor':
+                slip.managing_editor_signature = True
+            elif section == 'executive' and designation == 'editor_in_chief':
+                slip.editor_in_chief_signature = True
+            else:
+                return Response({'error': 'You have unauthorized section and designation.'}, status=status.HTTP_403_FORBIDDEN)
+
+            slip.save()
+
+            return Response({'message': 'Slip was accepted.'}, status=status.HTTP_200_OK)

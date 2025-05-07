@@ -66,7 +66,6 @@ class Slip(models.Model):
         null=True,
         blank=True,
     )
-    currently_active = models.BooleanField(default=True)
 
     condition_before = models.CharField(
         max_length=10,
@@ -91,6 +90,10 @@ class Slip(models.Model):
         null=True,
         blank=True,
     )
+
+
+    currently_active = models.BooleanField(default=True)
+    for_return = models.BooleanField(default=False)
 
     section_editor_signature = models.BooleanField(default=False)
     circulations_manager_signature = models.BooleanField(default=False)

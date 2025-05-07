@@ -70,6 +70,10 @@ class SlipSerializer(serializers.ModelSerializer):
             'borrowed_date',
             'return_date',
             'expected_return_date',
+
+            'currently_active',
+            'for_return',
+
             'section_editor_signature',
             'circulations_manager_signature',
             'managing_editor_signature',

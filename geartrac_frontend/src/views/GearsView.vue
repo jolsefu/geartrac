@@ -15,7 +15,7 @@ import Notify from "@/components/Notify.vue";
 import "cally";
 
 const returnDatePicked = ref();
-const conditionBeforePicked = ref();
+const conditionBefore = ref();
 
 const isVisible = ref();
 const gears = ref();
@@ -99,7 +99,7 @@ function unuseGear(gear_id) {
 
 function handleConditionBefore(e) {
   const condition = e.target.innerText;
-  conditionBeforePicked.value = condition;
+  conditionBefore.value = condition;
   document.getElementById("condition-popover").hidePopover();
 }
 
@@ -125,7 +125,7 @@ function borrowGear() {
       action: "borrow",
       gear_id: gearIds.value,
       expected_return_date: returnDate,
-      condition_before: conditionBeforePicked.value,
+      condition_before: conditionBefore.value,
     })
     .then((response) => {
       notify.message = response.data.message;
@@ -294,7 +294,7 @@ onMounted(() => {
               popovertarget="condition-popover"
               style="anchor-name: --anchor-1"
             >
-              {{ conditionBeforePicked || "Condition Before" }}
+              {{ conditionBefore || "Condition Before" }}
             </button>
             <ul
               class="dropdown menu w-52 rounded-box bg-base-100 shadow-sm"
