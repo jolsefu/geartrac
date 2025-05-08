@@ -40,7 +40,7 @@ def get_csrf_token(request):
 def check_email_domain(sender, instance, created, **kwargs):
     if created and not instance.email.endswith("@carsu.edu.ph"):
         instance.delete()
-        raise ValidationError("Only @carsu.edu.ph emails are allowed.")
+        raise ValidationError({'error': "Only @carsu.edu.ph emails are allowed."})
 
 """
     GoogleOAuth2CLient and GoogleLogin(SocialLoginView)
