@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from "vue";
-import { authLogIn, authLogOut, isAuthenticated, userDetails } from "@/auth";
+import { ref, reactive } from "vue";
+import { authLogIn, authLogOut, isAuthenticated, userDetails, authNotify } from "@/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Notify from "@/components/Notify.vue";
 
 const isVisible = ref(false);
 
@@ -18,6 +19,8 @@ setTimeout(() => {
 </script>
 
 <template>
+  <Notify :notify="authNotify" />
+
   <Transition name="swipe-up">
     <div v-if="isVisible" class="flex justify-center h-screen pt-[8rem] max-w">
       <Card class="w-fit h-fit">

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 
 import { googleSdkLoaded } from 'vue3-google-login'
 import google_keys from '../../google_keys.json'
@@ -15,6 +15,12 @@ const auth = axios.create({
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 })
+
+export const authNotify = reactive({
+  messageTitle: "",
+  message: "",
+});
+
 
 export const isAuthenticated = ref(false)
 export const userDetails = ref({})
@@ -82,11 +88,11 @@ export async function authLogOut() {
   try {
     const response = await auth.post('logout/')
 
-    console.log(response.data)
-
     window.location.href = 'login'
   } catch (error) {
-    console.error('Failed to log out:', error)
+    authNotify.message = error.response.data.error;
+    authNotify.messageTitle = error.response.status === 200 ? "Success" : "Error";
+    authNotify.error = true;
   }
 }
 
@@ -94,11 +100,11 @@ async function sendCodeToBackend(code) {
   try {
     const response = await auth.post('google/', { code: code })
 
-    console.log(response)
-
     window.location.href = '/'
   } catch (error) {
-    console.error('Failed to send authorization code:', error)
+    authNotify.message = error.response.data.error[0];
+    authNotify.messageTitle = error.response.status === 200 ? "Success" : "Error";
+    authNotify.error = true;
   }
 }
 
