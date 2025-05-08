@@ -192,6 +192,7 @@ onMounted(() => {
 
               <button
                 class="btn btn-info"
+                v-if="currentSlip.for_return"
                 popovertarget="condition-popover"
                 style="anchor-name: --anchor-1"
               >
