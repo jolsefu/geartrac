@@ -73,6 +73,8 @@ class SlipSerializer(serializers.ModelSerializer):
 
             'currently_active',
             'for_return',
+            'returned',
+            'declined',
 
             'section_editor_signature',
             'circulations_manager_signature',
