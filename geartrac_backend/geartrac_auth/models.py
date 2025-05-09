@@ -70,7 +70,22 @@ class Position(models.Model):
         choices=DESIGNATION_CHOICES,
         default='',
     )
+    permission_level = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        response = { 'level': 0 }
+
+        section_levels = {
+            'staff': 1,
+            'editorial': 2,
+            'managerial': 3,
+            'executive': 3
+        }
+        response['level'] = section_levels.get(self.section, 0)
+        self.permission_level = response['level']
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.user.email if self.user.email else self.user.username} - {self.section} - {self.designation}'
