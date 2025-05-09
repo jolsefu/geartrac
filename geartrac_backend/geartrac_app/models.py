@@ -94,6 +94,8 @@ class Slip(models.Model):
 
     currently_active = models.BooleanField(default=True)
     for_return = models.BooleanField(default=False)
+    returned = models.BooleanField(default=False)
+    declined = models.BooleanField(default=False)
 
     section_editor_signature = models.BooleanField(default=False)
     circulations_manager_signature = models.BooleanField(default=False)
