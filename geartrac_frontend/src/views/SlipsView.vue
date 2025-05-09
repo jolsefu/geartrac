@@ -53,6 +53,24 @@ function acceptSlip(slip_id) {
     });
 }
 
+function declineSlip(slip_id) {
+  api
+    .put("slip/", {
+      action: "decline",
+      slip_id: slip_id,
+    })
+    .then((response) => {
+      notify.message = response.data.message;
+      notify.messageTitle = response.status === 200 ? "Success" : "Error";
+      notify.success = true;
+    })
+    .catch((error) => {
+      notify.message = error.response.data.error;
+      notify.messageTitle = error.response.status === 200 ? "Success" : "Error";
+      notify.error = true;
+    });
+}
+
 function returnSlip(slip_id) {
   api
     .put("slip/", {
@@ -173,7 +191,14 @@ onMounted(() => {
                 class="btn btn-success"
                 @click="acceptSlip(currentSlip.id)"
               >
-                Accept Slip
+                Accept
+              </button>
+              <button
+                v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
+                class="btn btn-warning"
+                @click="declineSlip(currentSlip.id)"
+              >
+                Decline
               </button>
               <button
                 v-if="currentSlip.editor_in_chief_signature && userPermissionLevel == 1"

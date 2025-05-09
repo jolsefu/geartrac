@@ -227,6 +227,7 @@ class SlipsView(APIView):
                 return Response({'error': 'Condition after is required'}, status=status.HTTP_400_BAD_REQUEST)
 
             slip.for_return = False
+            slip.returned = True
             slip.return_date = timezone.now()
             slip.condition_after = condition_after
             slip.save()
@@ -243,6 +244,16 @@ class SlipsView(APIView):
             slip.save()
 
             return Response({'message': 'Slip is marked for return.'}, status=status.HTTP_200_OK)
+        elif action == 'decline':
+            if position.permission_level < 2:
+                return Response({'error': 'You do not have permission to decline this slip.'}, status=status.HTTP_403_FORBIDDEN)
+
+            slip.currently_active = False
+            slip.declined = True
+
+            slip.save()
+
+            return Response({'message': 'Slip was successfully declined.'}, status=status.HTTP_200_OK)
         elif action == 'accept':
             if section == 'editorial':
                 slip.section_editor_signature = True
