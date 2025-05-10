@@ -59,6 +59,7 @@ class Slip(models.Model):
         ('broken', 'Broken'),
     ]
 
+    custom_id = models.CharField(max_length=10)
     slipped_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -91,7 +92,6 @@ class Slip(models.Model):
         blank=True,
     )
 
-
     currently_active = models.BooleanField(default=True)
     for_return = models.BooleanField(default=False)
     returned = models.BooleanField(default=False)
@@ -109,6 +109,10 @@ class Slip(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+
+        if not self.custom_id:
+            year = timezone.now().year
+            self.custom_id = f'{year}-{str(self.id).zfill(3)}'
 
         if self.currently_active:
             for gear in self.gear_borrowed.all():
@@ -129,7 +133,7 @@ class Slip(models.Model):
         super().delete(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.slipped_by}'
+        return f'{self.custom_id} - {self.slipped_by}'
 
 class Log(models.Model):
     user = models.ForeignKey(

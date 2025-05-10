@@ -62,7 +62,7 @@ class SlipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Slip
         fields = [
-            'id',
+            'custom_id',
             'gear_borrowed',
             'slipped_by',
             'condition_before',
