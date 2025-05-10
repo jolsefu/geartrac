@@ -184,11 +184,19 @@ class SlipsView(APIView):
             slips = []
 
             if section == 'managerial' and designation == 'circulations_manager':
-                slips = Slip.objects.filter(
-                    currently_active=True,
-                    section_editor_signature=True,
-                    circulations_manager_signature=False,
-                ) | Slip.objects.filter(currently_active=False, for_return=True)
+                archived = request.data.get('archived')
+
+                if archived:
+                    slips = Slip.objects.filter(
+                        currently_active=False,
+                        for_return=False
+                    )
+                else:
+                    slips = Slip.objects.filter(
+                        currently_active=True,
+                        section_editor_signature=True,
+                        circulations_manager_signature=False,
+                    ) | Slip.objects.filter(currently_active=False, for_return=True)
             elif section == 'managerial' and designation == 'managing_editor':
                 slips = Slip.objects.filter(
                     currently_active=True,
