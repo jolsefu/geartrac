@@ -154,9 +154,6 @@ class SlipsView(APIView):
 
         if section == 'staff':
             slips = Slip.objects.filter(slipped_by=request.user, currently_active=True, for_return=False)
-            serializer = SlipSerializer(slips, many=True)
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
         elif section == 'editorial':
             staff_users = []
 
@@ -218,7 +215,7 @@ class SlipsView(APIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         paginator = PageNumberPagination()
-        paginator.page_size = 1
+        paginator.page_size = 3
 
         slips = slips.order_by('custom_id')
         result_page = paginator.paginate_queryset(slips, request)

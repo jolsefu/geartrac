@@ -12,11 +12,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Notify from "@/components/Notify.vue";
+import Pagination from "@/components/Pagination.vue";
 
 const isVisible = ref(false);
 const slips = ref([]);
 const currentSlip = ref(false);
 const conditionAfter = ref();
+const paginator = reactive({
+  slips: [],
+  pagesCount: 0,
+  currentPage: 1,
+  next: null,
+  previous: null,
+});
+
 const notify = reactive({
   messageTitle: "",
   message: "",
@@ -27,9 +36,17 @@ setTimeout(() => {
 }, 200);
 
 async function getSlips() {
+  console.log("getSLips called");
+
   try {
-    const response = await api.get("slip/");
-    slips.value = response.data;
+    const response = await api.get(`slip/?page=${paginator.currentPage}`);
+
+    paginator.slips = response.data.results;
+    paginator.pagesCount = response.data.count;
+    paginator.next = response.data.next;
+    paginator.previous = response.data.previous;
+
+    console.log(paginator);
   } catch (error) {
     console.log(error);
   }
@@ -125,16 +142,29 @@ onMounted(() => {
   <Transition name="swipe-up">
     <div v-if="isVisible" class="flex">
       <div
-        v-if="!slips.length"
+        v-if="!paginator.slips.length"
         class="flex justify-center items-center h-screen text-center w-full text-2xl"
       >
-        <h3 class="text-2xl" v-if="!slips.length">No slips!</h3>
+        <h3 class="text-2xl">No slips!</h3>
       </div>
 
       <div v-else class="flex justify-center items-center h-screen text-center w-full">
         <Dialog>
           <div class="container mx-auto px-4 w-fit mt-2">
-            <div v-for="slip in slips" class="mb-4 p-4 border rounded shadow flex">
+            <Pagination
+              :total-items="paginator.pagesCount"
+              :current-page="paginator.currentPage"
+              :next="paginator.next"
+              :previous="paginator.previous"
+              class="mb-5"
+              @update:current-page="(n) => (paginator.currentPage = n)"
+              @update-page="getSlips()"
+            />
+
+            <div
+              v-for="slip in paginator.slips"
+              class="mb-4 p-4 border rounded shadow flex"
+            >
               <div class="flex justify-center items-center flex-col">
                 <div>
                   {{ slip.for_return ? "(For Return)" : "" }}
