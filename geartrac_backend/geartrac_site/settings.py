@@ -171,6 +171,8 @@ AUTHENTICATION_BACKEND = {
 }
 
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 1,
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'geartrac_app.authentication.CookieTokenAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',

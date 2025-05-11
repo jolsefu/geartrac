@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -149,6 +150,8 @@ class SlipsView(APIView):
         section = position.section
         designation = position.designation
 
+        slips = Slip.objects.none()
+
         if section == 'staff':
             slips = Slip.objects.filter(slipped_by=request.user, currently_active=True, for_return=False)
             serializer = SlipSerializer(slips, many=True)
@@ -188,9 +191,8 @@ class SlipsView(APIView):
 
                 if archived:
                     slips = Slip.objects.filter(
-                        currently_active=False,
-                        for_return=False
-                    )
+                        declined=True
+                    ) | Slip.objects.filter(returned=True)
                 else:
                     slips = Slip.objects.filter(
                         currently_active=True,
@@ -212,12 +214,17 @@ class SlipsView(APIView):
                     managing_editor_signature=True,
                     editor_in_chief_signature=False,
                 )
-
-            serializer = SlipSerializer(slips, many=True)
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 1
+
+        slips = slips.order_by('custom_id')
+        result_page = paginator.paginate_queryset(slips, request)
+        serializer = SlipSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
     def put(self, request):
         position = Position.objects.get(user=request.user)
