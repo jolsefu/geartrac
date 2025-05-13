@@ -1,8 +1,8 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, watch } from "vue";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
-import { userPermissionLevel } from "@/auth";
+import { userPermissionLevel, userDetails } from "@/auth";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ import Notify from "@/components/Notify.vue";
 import Pagination from "@/components/Pagination.vue";
 
 const isVisible = ref(false);
-const slips = ref([]);
+const archived = ref(false);
 const currentSlip = ref(false);
 const conditionAfter = ref();
 const paginator = reactive({
@@ -31,22 +31,27 @@ const notify = reactive({
   message: "",
 });
 
-setTimeout(() => {
-  isVisible.value = true;
-}, 200);
+watch(archived, () => {
+  isVisible.value = false;
+  setTimeout(() => {
+    isVisible.value = true;
+  }, 200);
+
+  getSlips();
+});
 
 async function getSlips() {
-  console.log("getSLips called");
-
   try {
-    const response = await api.get(`slip/?page=${paginator.currentPage}`);
+    const response = await api.get(`slip/?page=${paginator.currentPage}`, {
+      params: {
+        archived: archived.value,
+      },
+    });
 
     paginator.slips = response.data.results;
     paginator.pagesCount = response.data.count;
     paginator.next = response.data.next;
     paginator.previous = response.data.previous;
-
-    console.log(paginator);
   } catch (error) {
     console.log(error);
   }
@@ -133,6 +138,9 @@ function handleConditionAfter(e) {
 
 onMounted(() => {
   getSlips();
+  setTimeout(() => {
+    isVisible.value = true;
+  }, 200);
 });
 </script>
 
@@ -140,15 +148,28 @@ onMounted(() => {
   <Notify :notify="notify" />
 
   <Transition name="swipe-up">
-    <div v-if="isVisible" class="flex">
+    <div v-if="isVisible" class="flex justify-center">
       <div
-        v-if="!paginator.slips.length"
-        class="flex justify-center items-center h-screen text-center w-full text-2xl"
+        class="flex justify-center items-end h-screen text-center w-1/4 text-2xl flex-col"
       >
-        <h3 class="text-2xl">No slips!</h3>
+        <Button @click="archived = !archived">{{
+          archived ? "Archived Slips" : "Active Slips"
+        }}</Button>
       </div>
 
-      <div v-else class="flex justify-center items-center h-screen text-center w-full">
+      <div
+        v-if="!paginator.slips.length"
+        class="flex justify-center items-center h-screen text-center w-1/4 text-2xl"
+      >
+        <h3 class="text-2xl">
+          {{ archived ? "No Archived Slips!" : "No Active Slips!" }}
+        </h3>
+      </div>
+
+      <div
+        v-if="paginator.slips.length"
+        class="flex items-center h-screen text-center w-1/2"
+      >
         <Dialog>
           <div class="container mx-auto px-4 w-fit mt-2">
             <Pagination
@@ -194,7 +215,12 @@ onMounted(() => {
               </div>
 
               <DialogDescription>
-                <div>Condition Before: {{ currentSlip.condition_before }}</div>
+                <div class="capitalize">
+                  Condition Before: {{ currentSlip.condition_before }}
+                </div>
+                <div v-if="archived" class="capitalize">
+                  Condition After: {{ currentSlip.condition_after }}
+                </div>
                 <div>
                   Borrowed Date:
                   {{ new Date(currentSlip.borrowed_date).toLocaleString() }}
@@ -203,45 +229,56 @@ onMounted(() => {
                   Expected Return Date:
                   {{ new Date(currentSlip.expected_return_date).toLocaleString() }}
                 </div>
+                <div v-if="archived">
+                  Return Date: {{ new Date(currentSlip.return_date).toLocaleString() }}
+                </div>
               </DialogDescription>
 
               <div class="mt-5">
-                <details class="dropdown">
-                  <summary class="btn m-1">View Borrowed Gear</summary>
-                  <ul
-                    class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
-                  >
-                    <li v-for="gear in currentSlip.gear_borrowed">
-                      {{ gear }}
-                    </li>
-                  </ul>
-                </details>
+                <div class="flex items-center">
+                  <details class="dropdown">
+                    <summary class="btn m-1">View Borrowed Gear</summary>
+                    <ul
+                      class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
+                    >
+                      <li v-for="gear in currentSlip.gear_borrowed">
+                        {{ gear }}
+                      </li>
+                    </ul>
+                  </details>
 
+                  <div v-if="!archived">
+                    <button
+                      v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
+                      class="btn btn-success"
+                      @click="acceptSlip(currentSlip.custom_id)"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
+                      class="btn btn-warning"
+                      @click="declineSlip(currentSlip.custom_id)"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
                 <button
-                  v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
-                  class="btn btn-success"
-                  @click="acceptSlip(currentSlip.id)"
-                >
-                  Accept
-                </button>
-                <button
-                  v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
-                  class="btn btn-warning"
-                  @click="declineSlip(currentSlip.id)"
-                >
-                  Decline
-                </button>
-                <button
-                  v-if="currentSlip.editor_in_chief_signature && userPermissionLevel == 1"
+                  v-if="
+                    currentSlip.editor_in_chief_signature &&
+                    currentSlip.slipped_by ===
+                      `${userDetails.first_name} ${userDetails.last_name}`
+                  "
                   class="btn btn-info"
-                  @click="returnSlip(currentSlip.id)"
+                  @click="returnSlip(currentSlip.custom_id)"
                 >
                   Return
                 </button>
                 <button
                   v-if="userPermissionLevel >= 2 && currentSlip.for_return"
                   class="btn btn-info"
-                  @click="acknowledgeReturn(currentSlip.id)"
+                  @click="acknowledgeReturn(currentSlip.custom_id)"
                 >
                   Accept Return
                 </button>
