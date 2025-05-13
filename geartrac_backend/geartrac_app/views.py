@@ -152,8 +152,16 @@ class SlipsView(APIView):
 
         slips = Slip.objects.none()
 
+        archived = request.query_params.get('archived', 'false').lower() == 'true'
+
         if section == 'staff':
-            slips = Slip.objects.filter(slipped_by=request.user, currently_active=True, for_return=False)
+            if archived:
+                slips = Slip.objects.filter(
+                    slipped_by=request.user,
+                    declined=True
+                ) | Slip.objects.filter(slipped_by=request.user, returned=True)
+            else:
+                slips = Slip.objects.filter(slipped_by=request.user, currently_active=True, for_return=False)
         elif section == 'editorial':
             staff_users = []
 
@@ -176,41 +184,42 @@ class SlipsView(APIView):
                     designation__in=['illustrator', 'senior_illustrator']
                 )
 
-            slips = Slip.objects.filter(slipped_by__in=staff_users, currently_active=True, section_editor_signature=False)
-            serializer = SlipSerializer(slips, many=True)
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if archived:
+                slips = Slip.objects.filter(
+                    slipped_by__in=staff_users,
+                    declined=True
+                ) | Slip.objects.filter(slipped_by__in=staff_users, returned=True)
+            else:
+                slips = Slip.objects.filter(slipped_by__in=staff_users, currently_active=True, section_editor_signature=False)
         elif section in ['managerial', 'executive']:
             slips = []
 
-            if section == 'managerial' and designation == 'circulations_manager':
-                archived = request.data.get('archived')
-
-                if archived:
-                    slips = Slip.objects.filter(
-                        declined=True
-                    ) | Slip.objects.filter(returned=True)
-                else:
+            if archived:
+                slips = Slip.objects.filter(
+                    declined=True
+                ) | Slip.objects.filter(returned=True)
+            else:
+                if section == 'managerial' and designation == 'circulations_manager':
                     slips = Slip.objects.filter(
                         currently_active=True,
                         section_editor_signature=True,
                         circulations_manager_signature=False,
                     ) | Slip.objects.filter(currently_active=False, for_return=True)
-            elif section == 'managerial' and designation == 'managing_editor':
-                slips = Slip.objects.filter(
-                    currently_active=True,
-                    section_editor_signature=True,
-                    circulations_manager_signature=True,
-                    managing_editor_signature=False,
-                )
-            elif section == 'executive' and designation == 'editor_in_chief':
-                slips = Slip.objects.filter(
-                    currently_active=True,
-                    section_editor_signature=True,
-                    circulations_manager_signature=True,
-                    managing_editor_signature=True,
-                    editor_in_chief_signature=False,
-                )
+                elif section == 'managerial' and designation == 'managing_editor':
+                    slips = Slip.objects.filter(
+                        currently_active=True,
+                        section_editor_signature=True,
+                        circulations_manager_signature=True,
+                        managing_editor_signature=False,
+                    )
+                elif section == 'executive' and designation == 'editor_in_chief':
+                    slips = Slip.objects.filter(
+                        currently_active=True,
+                        section_editor_signature=True,
+                        circulations_manager_signature=True,
+                        managing_editor_signature=True,
+                        editor_in_chief_signature=False,
+                    )
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -230,7 +239,11 @@ class SlipsView(APIView):
 
         action = request.data.get('action')
         slip_id = request.data.get('slip_id')
-        slip = Slip.objects.get(id=slip_id)
+
+        try:
+            slip = Slip.objects.get(custom_id=slip_id)
+        except Slip.DoesNotExist:
+            return Response({'error': 'Slip not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if action == 'acknowledge_return':
             condition_after = request.data.get('condition_after')
@@ -250,6 +263,9 @@ class SlipsView(APIView):
 
             return Response({'message': 'Gear successfully returned'}, status=status.HTTP_200_OK)
         elif action == 'return':
+            if slip.slipped_by != request.user:
+                return Response({'error': 'You are not the owner of this slip.'}, status=status.HTTP_400_BAD_REQUEST)
+
             slip.currently_active = False
             slip.for_return = True
 
