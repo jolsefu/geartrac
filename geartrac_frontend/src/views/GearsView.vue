@@ -1,8 +1,9 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, watch } from "vue";
 import { api } from "@/api";
 import { userDetails } from "@/auth";
 import { Button } from "@/components/ui/button";
+import Pagination from "@/components/Pagination.vue";
 import {
   Dialog,
   DialogContent,
@@ -18,22 +19,35 @@ const returnDatePicked = ref();
 const conditionBefore = ref();
 
 const isVisible = ref();
-const gears = ref();
 const gearIds = ref([]);
 const currentGear = ref({});
 const notify = reactive({
   messageTitle: "",
   message: "",
 });
-
-setTimeout(() => {
-  isVisible.value = true;
-}, 200);
+const paginator = reactive({
+  gears: [],
+  gearIds: [],
+  search: null,
+  pagesCount: 0,
+  currentPage: 1,
+  next: null,
+  previous: null,
+});
 
 async function getGears() {
   try {
-    const response = await api.get("gear/");
-    gears.value = response.data;
+    const response = await api.get("gear/", {
+      params: {
+        page: paginator.currentPage,
+        search: paginator.search,
+      },
+    });
+
+    paginator.gears = response.data.results;
+    paginator.pagesCount = response.data.count;
+    paginator.next = response.data.next;
+    paginator.previous = response.data.previous;
   } catch (error) {
     console.log(error);
   }
@@ -41,14 +55,14 @@ async function getGears() {
 
 function handleCheckboxChange(id, event) {
   if (event.target.checked) {
-    gearIds.value.push(id);
+    paginator.gearIds.push(id);
   } else {
-    gearIds.value = gearIds.value.filter((gearId) => gearId !== id);
+    paginator.gearIds = paginator.gearIds.filter((gearId) => gearId !== id);
   }
 }
 
 function useGear() {
-  if (!gearIds.value.length) {
+  if (!paginator.gearIds.length) {
     notify.message = "Please select a gear.";
     notify.messageTitle = "Error";
     notify.error = true;
@@ -59,14 +73,14 @@ function useGear() {
   api
     .post("gear/", {
       action: "use",
-      gear_id: gearIds.value,
+      gear_id: paginator.gearIds,
     })
     .then((response) => {
       notify.message = response.data.message;
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
       notify.success = true;
 
-      gearIds.value = [];
+      paginator.gearIds = [];
 
       window.location.reload();
     })
@@ -104,7 +118,7 @@ function handleConditionBefore(e) {
 }
 
 function handleBorrow() {
-  if (!gearIds.value.length) {
+  if (!paginator.gearIds.length) {
     notify.message = "Please select a gear.";
     notify.messageTitle = "Error";
     notify.error = true;
@@ -123,7 +137,7 @@ function borrowGear() {
   api
     .post("gear/", {
       action: "borrow",
-      gear_id: gearIds.value,
+      gear_id: paginator.gearIds,
       expected_return_date: returnDate,
       condition_before: conditionBefore.value,
     })
@@ -132,7 +146,7 @@ function borrowGear() {
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
       notify.success = true;
 
-      gearIds.value = [];
+      paginator.gearIds = [];
 
       window.location.reload();
     })
@@ -145,6 +159,9 @@ function borrowGear() {
 
 onMounted(() => {
   getGears();
+  setTimeout(() => {
+    isVisible.value = true;
+  }, 200);
 });
 </script>
 
@@ -169,8 +186,17 @@ onMounted(() => {
               Borrow
             </Button>
           </div>
+          <Pagination
+            :total-items="paginator.pagesCount"
+            :current-page="paginator.currentPage"
+            :next="paginator.next"
+            :previous="paginator.previous"
+            class="mb-5"
+            @update:current-page="(n) => (paginator.currentPage = n)"
+            @update-page="getGears()"
+          />
           <div
-            v-for="gear in gears"
+            v-for="gear in paginator.gears"
             :key="gear.property_number"
             class="mb-4 p-4 border rounded shadow flex"
           >
