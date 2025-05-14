@@ -1,20 +1,10 @@
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from dj_rest_auth.registration.views import SocialLoginView
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.core.exceptions import ValidationError
-
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.contrib.postgres.search import TrigramSimilarity
 
 from .serializers import *
 from .models import *
@@ -26,9 +16,27 @@ class GearsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        search_query = request.query_params.get('search', '')
+
         gears = Gear.objects.all()
-        serializer = GearSerializer(gears, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        if search_query:
+            gears = gears.annotate(
+                similarity=TrigramSimilarity(
+                    'name',
+                    search_query
+                )).filter(similarity__gt=0.01).order_by('-similarity')
+        else:
+            gears = gears.order_by('name')
+
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 3
+
+        result_page = paginator.paginate_queryset(gears, request)
+        serializer = GearSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         action = request.data.get('action')
