@@ -26,9 +26,6 @@ class GearsView(APIView):
                     'name',
                     search_query
                 )).filter(similarity__gt=0.01).order_by('-similarity')
-        else:
-            gears = gears.order_by('name')
-
 
         paginator = PageNumberPagination()
         paginator.page_size = 3
@@ -231,10 +228,23 @@ class SlipsView(APIView):
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
+        search_query = request.query_params.get('search', '')
+
+        if search_query:
+            slips = slips.annotate(
+                similarity=TrigramSimilarity(
+                    'custom_id',
+                    search_query
+                )).filter(similarity__gt=0.5).order_by('-similarity')
+
+            print(slips)
+        else:
+            slips = slips.order_by('custom_id')
+
+
         paginator = PageNumberPagination()
         paginator.page_size = 3
 
-        slips = slips.order_by('custom_id')
         result_page = paginator.paginate_queryset(slips, request)
         serializer = SlipSerializer(result_page, many=True)
 
