@@ -17,7 +17,6 @@ class GearsView(APIView):
 
     def get(self, request):
         request_user_owner = request.query_params.get('request_user_owner').lower() == 'true'
-        available = request.query_params.get('available').lower() == 'true'
         search_query = request.query_params.get('search', '')
 
         if request_user_owner:
@@ -29,8 +28,15 @@ class GearsView(APIView):
         else:
             gears = Gear.objects.all()
 
-        if available:
-            gears = gears.filter(used=False, borrowed=False)
+        try:
+            available = request.query_params.get('available').lower() == 'true'
+        except AttributeError:
+            available = None
+
+        if available is True:
+            gears = gears.filter(used_by=None, borrowed_by=None)
+        elif available is False:
+            gears = gears.exclude(used_by=None, borrowed_by=None)
 
         gears = gears.order_by('id')
 
