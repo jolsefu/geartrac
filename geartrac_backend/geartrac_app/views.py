@@ -16,9 +16,23 @@ class GearsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        request_user_owner = request.query_params.get('request_user_owner').lower() == 'true'
+        available = request.query_params.get('available').lower() == 'true'
         search_query = request.query_params.get('search', '')
 
-        gears = Gear.objects.all()
+        if request_user_owner:
+            gears = Gear.objects.filter(
+                used_by=request.user
+            ) | Gear.objects.filter(
+                borrowed_by=request.user
+            )
+        else:
+            gears = Gear.objects.all()
+
+        if available:
+            gears = gears.filter(used=False, borrowed=False)
+
+        gears = gears.order_by('id')
 
         if search_query:
             gears = gears.annotate(
