@@ -17,29 +17,54 @@ import "cally";
 
 const returnDatePicked = ref();
 const conditionBefore = ref();
-
 const isVisible = ref();
-const gearIds = ref([]);
 const currentGear = ref({});
-const notify = reactive({
-  messageTitle: "",
-  message: "",
-});
+
 const paginator = reactive({
   gears: [],
   gearIds: [],
+  available: null,
+  request_user_owner: false,
   search: null,
+
   pagesCount: 0,
   currentPage: 1,
   next: null,
   previous: null,
 });
 
+const notify = reactive({
+  messageTitle: "",
+  message: "",
+});
+
+watch(
+  () => paginator.available,
+  () => {
+    isVisible.value = false;
+    setTimeout(() => {
+      isVisible.value = true;
+    }, 200);
+
+    getGears();
+  }
+);
+
+watch(
+  () => paginator.search,
+  () => {
+    getGears();
+  }
+);
+
 async function getGears() {
   try {
     const response = await api.get("gear/", {
       params: {
         page: paginator.currentPage,
+        request_user_owner: paginator.request_user_owner,
+        available: paginator.available,
+
         search: paginator.search,
       },
     });
@@ -50,6 +75,16 @@ async function getGears() {
     paginator.previous = response.data.previous;
   } catch (error) {
     console.log(error);
+  }
+}
+
+function cycleAvailability() {
+  if (paginator.available === null) {
+    paginator.available = true;
+  } else if (paginator.available === true) {
+    paginator.available = false;
+  } else {
+    paginator.available = null;
   }
 }
 
@@ -174,58 +209,77 @@ onMounted(() => {
       class="flex items-center justify-center h-screen text-center flex-col"
     >
       <Dialog>
-        <div class="container mx-auto px-4 max-w-min mt-16">
-          <div class="mb-5 flex justify-center gap-1">
-            <Button class="bg-green-500 text-black hover:bg-green-600" @click="useGear">
-              Use
-            </Button>
-            <Button
-              class="bg-blue-700 text-black hover:bg-blue-800"
-              @click="handleBorrow"
-            >
-              Borrow
-            </Button>
-          </div>
-          <Pagination
-            :total-items="paginator.pagesCount"
-            :current-page="paginator.currentPage"
-            :next="paginator.next"
-            :previous="paginator.previous"
-            class="mb-5"
-            @update:current-page="(n) => (paginator.currentPage = n)"
-            @update-page="getGears()"
-          />
-          <div
-            v-for="gear in paginator.gears"
-            :key="gear.property_number"
-            class="mb-4 p-4 border rounded shadow flex"
-          >
-            <div class="flex items-center">
-              <label>
-                <input
-                  type="checkbox"
-                  :value="gear"
-                  @change="handleCheckboxChange(gear.id, $event)"
-                  :disabled="gear.used || gear.borrowed"
-                />
-              </label>
+        <div class="flex items-center w-full h-screen justify-center">
+          <div class="flex justify-center gap-2 h-screen items-end w-1/4 flex-col">
+            <div>
+              <Button @click="cycleAvailability">{{
+                paginator.available === null
+                  ? "All"
+                  : paginator.available
+                  ? "Available"
+                  : "Unavailable"
+              }}</Button>
             </div>
 
-            <div class="border-r border-gray-300 mx-4"></div>
+            <div class="flex gap-1">
+              <Button class="bg-green-500 text-black hover:bg-green-600" @click="useGear">
+                Use
+              </Button>
+              <Button
+                class="bg-blue-700 text-black hover:bg-blue-800"
+                @click="handleBorrow"
+              >
+                Borrow
+              </Button>
+            </div>
+          </div>
 
-            <h2>
-              <DialogTrigger as-child>
-                <Button
-                  class="bg-white text-black hover:bg-[#cccccc] hover:text-black"
-                  @click="currentGear.value = gear"
-                >
-                  {{ gear.name }}
-                  <span class="text-[#4e4e4e]">
-                    {{ gear.used || gear.borrowed ? "Not available" : "Available" }}
-                  </span>
-                </Button>
-              </DialogTrigger>
-            </h2>
+          <div class="flex items-center h-screen text-center w-1/2">
+            <div class="container mx-auto px-4 w-fit mt-2">
+              <div class="">
+                <Pagination
+                  :total-items="paginator.pagesCount"
+                  :current-page="paginator.currentPage"
+                  :next="paginator.next"
+                  :previous="paginator.previous"
+                  class="mb-5"
+                  @update:current-page="(n) => (paginator.currentPage = n)"
+                  @update-page="getGears()"
+                />
+              </div>
+              <div
+                v-for="gear in paginator.gears"
+                :key="gear.property_number"
+                class="mb-4 p-4 border rounded shadow flex"
+              >
+                <div class="flex items-center">
+                  <label>
+                    <input
+                      type="checkbox"
+                      :value="gear"
+                      @change="handleCheckboxChange(gear.id, $event)"
+                      :disabled="gear.used || gear.borrowed"
+                    />
+                  </label>
+                </div>
+
+                <div class="border-r border-gray-300 mx-4"></div>
+
+                <h2>
+                  <DialogTrigger as-child>
+                    <Button
+                      class="bg-white text-black hover:bg-[#cccccc] hover:text-black"
+                      @click="currentGear.value = gear"
+                    >
+                      {{ gear.name }}
+                      <span class="text-[#4e4e4e]">
+                        {{ gear.used || gear.borrowed ? "Not available" : "Available" }}
+                      </span>
+                    </Button>
+                  </DialogTrigger>
+                </h2>
+              </div>
+            </div>
           </div>
         </div>
 
