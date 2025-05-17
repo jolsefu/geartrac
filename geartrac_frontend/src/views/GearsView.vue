@@ -40,7 +40,7 @@ const notify = reactive({
 });
 
 watch(
-  () => paginator.available,
+  () => [paginator.available, paginator.request_user_owner],
   () => {
     isVisible.value = false;
     setTimeout(() => {
@@ -221,7 +221,12 @@ onMounted(() => {
               />
             </div>
 
-            <div>
+            <div class="flex gap-1">
+              <Button
+                @click="paginator.request_user_owner = !paginator.request_user_owner"
+              >
+                {{ paginator.request_user_owner ? "Used by You" : "Used by Anyone" }}
+              </Button>
               <Button @click="cycleAvailability">{{
                 paginator.available === null
                   ? "All"
