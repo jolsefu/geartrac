@@ -15,11 +15,14 @@ import Notify from "@/components/Notify.vue";
 import Pagination from "@/components/Pagination.vue";
 
 const isVisible = ref(false);
-const archived = ref(false);
 const currentSlip = ref(false);
 const conditionAfter = ref();
+
 const paginator = reactive({
   slips: [],
+  archived: false,
+  search: null,
+
   pagesCount: 0,
   currentPage: 1,
   next: null,
@@ -31,20 +34,32 @@ const notify = reactive({
   message: "",
 });
 
-watch(archived, () => {
-  isVisible.value = false;
-  setTimeout(() => {
-    isVisible.value = true;
-  }, 200);
+watch(
+  () => paginator.archived,
+  () => {
+    isVisible.value = false;
+    setTimeout(() => {
+      isVisible.value = true;
+    }, 200);
 
-  getSlips();
-});
+    getSlips();
+  }
+);
+
+watch(
+  () => paginator.search,
+  () => {
+    getSlips();
+  }
+);
 
 async function getSlips() {
   try {
-    const response = await api.get(`slip/?page=${paginator.currentPage}`, {
+    const response = await api.get("slip/", {
       params: {
-        archived: archived.value,
+        paginator: paginator.currentPage,
+        search: paginator.search,
+        archived: paginator.archived,
       },
     });
 
@@ -150,19 +165,29 @@ onMounted(() => {
   <Transition name="swipe-up">
     <div v-if="isVisible" class="flex justify-center">
       <div
-        class="flex justify-center items-end h-screen text-center w-1/4 text-2xl flex-col"
+        class="flex justify-center items-end h-screen text-center w-1/4 text-2xl flex-col gap-1"
       >
-        <Button @click="archived = !archived">{{
-          archived ? "Archived Slips" : "Active Slips"
-        }}</Button>
+        <div>
+          <input
+            type="text"
+            placeholder="Enter Slip Name"
+            className="input"
+            v-model="paginator.search"
+          />
+        </div>
+        <div>
+          <Button @click="paginator.archived = !paginator.archived">{{
+            paginator.archived ? "Archived Slips" : "Active Slips"
+          }}</Button>
+        </div>
       </div>
 
       <div
         v-if="!paginator.slips.length"
-        class="flex justify-center items-center h-screen text-center w-1/4 text-2xl"
+        class="flex justify-center items-center h-screen text-center w-1/2 text-2xl"
       >
         <h3 class="text-2xl">
-          {{ archived ? "No Archived Slips!" : "No Active Slips!" }}
+          {{ paginator.archived ? "No Archived Slips!" : "No Slips!" }}
         </h3>
       </div>
 
@@ -218,7 +243,7 @@ onMounted(() => {
                 <div class="capitalize">
                   Condition Before: {{ currentSlip.condition_before }}
                 </div>
-                <div v-if="archived" class="capitalize">
+                <div v-if="paginator.archived" class="capitalize">
                   Condition After: {{ currentSlip.condition_after }}
                 </div>
                 <div>
@@ -229,7 +254,7 @@ onMounted(() => {
                   Expected Return Date:
                   {{ new Date(currentSlip.expected_return_date).toLocaleString() }}
                 </div>
-                <div v-if="archived">
+                <div v-if="paginator.archived">
                   Return Date: {{ new Date(currentSlip.return_date).toLocaleString() }}
                 </div>
               </DialogDescription>
@@ -247,7 +272,7 @@ onMounted(() => {
                     </ul>
                   </details>
 
-                  <div v-if="!archived">
+                  <div v-if="!paginator.archived">
                     <button
                       v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
                       class="btn btn-success"
