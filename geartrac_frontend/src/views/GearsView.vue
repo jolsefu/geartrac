@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import Notify from "@/components/Notify.vue";
 import "cally";
+import { PaginationFirst } from "reka-ui";
 
 const returnDatePicked = ref();
 const conditionBefore = ref();
@@ -212,6 +213,15 @@ onMounted(() => {
         <div class="flex items-center w-full h-screen justify-center">
           <div class="flex justify-center gap-2 h-screen items-end w-1/4 flex-col">
             <div>
+              <input
+                type="text"
+                placeholder="Enter Gear Name"
+                className="input"
+                v-model="paginator.search"
+              />
+            </div>
+
+            <div>
               <Button @click="cycleAvailability">{{
                 paginator.available === null
                   ? "All"
@@ -220,24 +230,13 @@ onMounted(() => {
                   : "Unavailable"
               }}</Button>
             </div>
-
-            <div class="flex gap-1">
-              <Button class="bg-green-500 text-black hover:bg-green-600" @click="useGear">
-                Use
-              </Button>
-              <Button
-                class="bg-blue-700 text-black hover:bg-blue-800"
-                @click="handleBorrow"
-              >
-                Borrow
-              </Button>
-            </div>
           </div>
 
           <div class="flex items-center h-screen text-center w-1/2">
             <div class="container mx-auto px-4 w-fit mt-2">
               <div class="">
                 <Pagination
+                  v-if="paginator.gears.length"
                   :total-items="paginator.pagesCount"
                   :current-page="paginator.currentPage"
                   :next="paginator.next"
@@ -246,6 +245,24 @@ onMounted(() => {
                   @update:current-page="(n) => (paginator.currentPage = n)"
                   @update-page="getGears()"
                 />
+              </div>
+              <div v-if="paginator.gearIds.length" class="flex gap-1 justify-center mb-5">
+                <Button
+                  class="bg-green-500 text-black hover:bg-green-600"
+                  @click="useGear"
+                >
+                  Use
+                </Button>
+                <Button
+                  class="bg-blue-700 text-black hover:bg-blue-800"
+                  @click="handleBorrow"
+                >
+                  Borrow
+                </Button>
+              </div>
+
+              <div v-if="!paginator.gears.length">
+                <h3 class="text-2xl">No gears!</h3>
               </div>
               <div
                 v-for="gear in paginator.gears"
