@@ -58,8 +58,9 @@ async function getSlips() {
     const response = await api.get("slip/", {
       params: {
         paginator: paginator.currentPage,
-        search: paginator.search,
         archived: paginator.archived,
+
+        search: paginator.search,
       },
     });
 
