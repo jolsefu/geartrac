@@ -296,7 +296,7 @@ class SlipsView(APIView):
             slip.save()
 
             log = Log.objects.create(user=request.user, action=action)
-            log.gear.set(slip.gear_borrowed)
+            log.gear.set(slip.gear_borrowed.all())
             log.save()
 
             return Response({'message': 'Gear successfully returned'}, status=status.HTTP_200_OK)
