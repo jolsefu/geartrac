@@ -260,19 +260,8 @@ onMounted(() => {
                 </div>
               </DialogDescription>
 
-              <div class="mt-5">
+              <div class="mt-5 flex flex-col">
                 <div class="flex items-center">
-                  <details class="dropdown">
-                    <summary class="btn m-1">View Borrowed Gear</summary>
-                    <ul
-                      class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
-                    >
-                      <li v-for="gear in currentSlip.gear_borrowed">
-                        {{ gear }}
-                      </li>
-                    </ul>
-                  </details>
-
                   <div v-if="!paginator.archived">
                     <button
                       v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
@@ -290,44 +279,58 @@ onMounted(() => {
                     </button>
                   </div>
                 </div>
+
                 <button
                   v-if="
                     currentSlip.editor_in_chief_signature &&
                     currentSlip.slipped_by ===
-                      `${userDetails.first_name} ${userDetails.last_name}`
+                      `${userDetails.first_name} ${userDetails.last_name}` &&
+                    !(currentSlip.returned || currentSlip.declined)
                   "
                   class="btn btn-info"
                   @click="returnSlip(currentSlip.custom_id)"
                 >
                   Return
                 </button>
-                <button
-                  v-if="userPermissionLevel >= 2 && currentSlip.for_return"
-                  class="btn btn-info"
-                  @click="acknowledgeReturn(currentSlip.custom_id)"
-                >
-                  Accept Return
-                </button>
 
-                <button
-                  class="btn btn-info"
-                  v-if="currentSlip.for_return"
-                  popovertarget="condition-popover"
-                  style="anchor-name: --anchor-1"
-                >
-                  {{ conditionAfter || "Condition After" }}
-                </button>
-                <ul
-                  class="dropdown menu w-52 rounded-box bg-base-100 shadow-sm"
-                  popover
-                  id="condition-popover"
-                  style="position-anchor: --anchor-1"
-                >
-                  <li><a @click="(e) => handleConditionAfter(e)">Great</a></li>
-                  <li><a @click="(e) => handleConditionAfter(e)">Good</a></li>
-                  <li><a @click="(e) => handleConditionAfter(e)">Bad</a></li>
-                  <li><a @click="(e) => handleConditionAfter(e)">Broken</a></li>
-                </ul>
+                <div v-if="userPermissionLevel >= 2 && currentSlip.for_return">
+                  <button
+                    class="btn btn-info"
+                    popovertarget="condition-popover"
+                    style="anchor-name: --anchor-1"
+                  >
+                    {{ conditionAfter || "Condition After" }}
+                  </button>
+                  <ul
+                    class="dropdown menu w-52 rounded-box bg-base-100 shadow-sm"
+                    popover
+                    id="condition-popover"
+                    style="position-anchor: --anchor-1"
+                  >
+                    <li><a @click="(e) => handleConditionAfter(e)">Great</a></li>
+                    <li><a @click="(e) => handleConditionAfter(e)">Good</a></li>
+                    <li><a @click="(e) => handleConditionAfter(e)">Bad</a></li>
+                    <li><a @click="(e) => handleConditionAfter(e)">Broken</a></li>
+                  </ul>
+
+                  <button
+                    class="btn btn-info"
+                    @click="acknowledgeReturn(currentSlip.custom_id)"
+                  >
+                    Accept Return
+                  </button>
+                </div>
+
+                <details class="dropdown">
+                  <summary class="btn">View Borrowed Gear</summary>
+                  <ul
+                    class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 shadow-sm"
+                  >
+                    <li v-for="gear in currentSlip.gear_borrowed">
+                      {{ gear }}
+                    </li>
+                  </ul>
+                </details>
               </div>
             </DialogHeader>
 
