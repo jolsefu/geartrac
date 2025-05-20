@@ -57,6 +57,14 @@ setTimeout(() => {
                 Slips
               </RouterLink>
             </li>
+            <li v-if="isAuthenticated && userPermissionLevel >= 2">
+              <RouterLink
+                to="/logs"
+                class="text-white hover:-translate-y-1 transition duration-300 ease-in-out"
+              >
+                Logs
+              </RouterLink>
+            </li>
           </ul>
         </div>
 
