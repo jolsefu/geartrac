@@ -160,6 +160,7 @@ class Log(models.Model):
         on_delete=models.CASCADE,
         related_name='log_slip',
         null=True,
+        blank=True,
     )
 
     action = models.CharField(max_length=50, choices=actions)
