@@ -16,7 +16,12 @@ class GearsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        request_user_owner = request.query_params.get('request_user_owner').lower() == 'true'
+        request_user_owner = request.query_params.get('request_user_owner')
+        if request_user_owner:
+            request_user_owner = request_user_owner.lower() == 'true'
+        else:
+            request_user_owner = False
+
         search_query = request.query_params.get('search', '')
 
         if request_user_owner:

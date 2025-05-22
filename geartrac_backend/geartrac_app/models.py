@@ -133,7 +133,7 @@ class Slip(models.Model):
         super().delete(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.custom_id} - {self.slipped_by}'
+        return f'{self.custom_id} - {self.slipped_by.email}'
 
 class Log(models.Model):
     actions = [
