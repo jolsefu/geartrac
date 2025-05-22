@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import Notify from "@/components/Notify.vue";
 import "cally";
-import { PaginationFirst } from "reka-ui";
 
 const returnDatePicked = ref();
 const conditionBefore = ref();
@@ -127,18 +126,20 @@ function useGear() {
     });
 }
 
-function unuseGear(gear_id) {
+function unuseGear() {
   api
     .put("gear/", {
       action: "unuse",
-      gear_id: gear_id,
+      gear_id: paginator.gearIds,
     })
     .then((response) => {
       notify.message = response.data.message;
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
       notify.success = true;
 
-      getGears();
+      paginator.gearIds = [];
+
+      window.location.reload();
     })
     .catch((error) => {
       notify.message = error.response.data.error;
@@ -191,6 +192,14 @@ function borrowGear() {
       notify.messageTitle = error.response.status === 200 ? "Success" : "Error";
       notify.error = true;
     });
+}
+
+function gearStatus(gear) {
+  const fullName = `${userDetails.value.first_name} ${userDetails.value.last_name}`;
+  if (gear.used_by === fullName) return "Used by You";
+  else if (gear.borrowed_by === fullName) return "Borrowed by You";
+  else if (gear.used || gear.borrowed) return "Not available";
+  else return "Available";
 }
 
 onMounted(() => {
@@ -295,7 +304,7 @@ onMounted(() => {
                     >
                       {{ gear.name }}
                       <span class="text-[#4e4e4e]">
-                        {{ gear.used || gear.borrowed ? "Not available" : "Available" }}
+                        {{ gearStatus(gear) }}
                       </span>
                     </Button>
                   </DialogTrigger>
@@ -349,7 +358,7 @@ onMounted(() => {
 
       <dialog id="borrow_modal" class="modal">
         <div class="modal-box">
-          <div class="font-bold">Expected Return Date</div>
+          <div class="font-bold">Borrower's Slip Details</div>
           <div class="modal-action">
             <button
               popoverTarget="cally-popover1"
@@ -357,7 +366,7 @@ onMounted(() => {
               id="cally1"
               style="anchorname: --cally1"
             >
-              {{ returnDatePicked ? returnDatePicked : "Pick A Date" }}
+              {{ returnDatePicked ? returnDatePicked : "Expected Return Date" }}
             </button>
             <div
               popover
