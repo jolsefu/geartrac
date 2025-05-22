@@ -40,20 +40,38 @@ class GearSerializer(serializers.ModelSerializer):
 class LogSerializer(serializers.ModelSerializer):
     gear = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
+    slip_id = serializers.SerializerMethodField()
+    slipped_by = serializers.SerializerMethodField()
 
     class Meta:
         model = Log
-        fields = ['gear', 'user', 'action', 'timestamp']
+        fields = [
+            'user',
+            'gear',
+            'slip_id',
+            'slipped_by',
+            'action',
+            'timestamp',
+            'slip'
+        ]
+
+    def get_user(self, obj):
+        if obj.user:
+            return f'{obj.user.first_name} {obj.user.last_name}'.strip() or obj.user.username
+        return None
 
     def get_gear(self, obj):
         if obj.gear.exists():
             return [gear.name for gear in obj.gear.all()]
         return []
 
-    def get_user(self, obj):
-        if obj.user:
-            return f'{obj.user.first_name} {obj.user.last_name}'.strip() or obj.user.username
-        return None
+    def get_slip_id(self, obj):
+        if obj.slip:
+            return f'{obj.slip.custom_id}'.strip()
+
+    def get_slipped_by(self, obj):
+        if obj.slip:
+            return f'{obj.slip.slipped_by.first_name} {obj.slip.slipped_by.last_name}'.strip()
 
 class SlipSerializer(serializers.ModelSerializer):
     gear_borrowed = serializers.SerializerMethodField()
