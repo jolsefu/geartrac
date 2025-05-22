@@ -136,6 +136,16 @@ class Slip(models.Model):
         return f'{self.custom_id} - {self.slipped_by}'
 
 class Log(models.Model):
+    actions = [
+        ('use', 'Use'),
+        ('unuse', 'Unuse'),
+        ('borrow', 'Borrow'),
+        ('slip_confirmed', 'Slip Confirmed'),
+        ('for_return', 'For Return'),
+        ('returned', 'Return'),
+        ('declined', 'Declined'),
+    ]
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -145,8 +155,14 @@ class Log(models.Model):
         Gear,
         related_name='log_gear',
     )
+    slip = models.ForeignKey(
+        Slip,
+        on_delete=models.CASCADE,
+        related_name='log_slip',
+        null=True,
+    )
 
-    action = models.CharField(max_length=50)
+    action = models.CharField(max_length=50, choices=actions)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
