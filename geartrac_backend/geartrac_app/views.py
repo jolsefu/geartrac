@@ -73,7 +73,7 @@ class GearsView(APIView):
             if gear.used_by:
                 return Response({'message': f'Gear with ID {id} is currently in use'}, status=status.HTTP_400_BAD_REQUEST)
 
-        gear = Gear.objects.filter(id__in=gear_id)
+        gears = Gear.objects.filter(id__in=gear_id)
 
         if action == 'borrow':
             if not request.data.get('expected_return_date'):
@@ -87,22 +87,23 @@ class GearsView(APIView):
                 borrowed_date=timezone.now(),
                 expected_return_date=request.data.get('expected_return_date'),
             )
-            slip.gear_borrowed.set(gear)
+            slip.gear_borrowed.set(gears)
             slip.save()
 
             log = Log.objects.create(user=request.user, action=action)
-            log.gear.set(gear)
+            log.slip = slip
+            log.gear.set(gears)
             log.save()
 
             return Response({'message': 'Gear/s successfully borrowed'}, status=status.HTTP_200_OK)
 
         elif action == 'use':
-            for g in gear:
-                g.used_by = request.user
-                g.save()
+            for gear in gears:
+                gear.used_by = request.user
+                gear.save()
 
             log = Log.objects.create(user=request.user, action=action)
-            log.gear.set(gear)
+            log.gear.set(gears)
             log.save()
 
             return Response({'message': 'Gear successfully marked as used'}, status=status.HTTP_200_OK)
@@ -121,9 +122,14 @@ class GearsView(APIView):
             if not gear_id:
                 return Response({'error': 'Provide a gear_id'}, status=status.HTTP_400_BAD_REQUEST)
 
-            gear = Gear.objects.get(id=gear_id)
-            gear.used_by = None
-            gear.save()
+            gears = Gear.objects.filter(id__in=gear_id)
+            for gear in gears:
+                gear.used_by = None
+                gear.save()
+
+            log = Log.objects.create(user=request.user, action=action)
+            log.gear.set(gear)
+            log.save()
 
             return Response({'message': 'Gear successfully marked as unused.'}, status=status.HTTP_200_OK)
 
@@ -283,7 +289,7 @@ class SlipsView(APIView):
         except Slip.DoesNotExist:
             return Response({'error': 'Slip not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        if action == 'acknowledge_return':
+        if action == 'confirm_return':
             condition_after = request.data.get('condition_after')
 
             if not condition_after:
@@ -296,21 +302,27 @@ class SlipsView(APIView):
             slip.save()
 
             log = Log.objects.create(user=request.user, action=action)
+            log.slip = slip
             log.gear.set(slip.gear_borrowed.all())
             log.save()
 
             return Response({'message': 'Gear successfully returned'}, status=status.HTTP_200_OK)
-        elif action == 'return':
+        elif action == 'for_return':
             if slip.slipped_by != request.user:
                 return Response({'error': 'You are not the owner of this slip.'}, status=status.HTTP_400_BAD_REQUEST)
 
             slip.currently_active = False
             slip.for_return = True
 
+            log = Log.objects.create(user=request.user, action=action)
+            log.slip = slip
+            log.gear.set(slip.gear_borrowed.all())
+            log.save()
+
             slip.save()
 
             return Response({'message': 'Slip is marked for return.'}, status=status.HTTP_200_OK)
-        elif action == 'decline':
+        elif action == 'declined':
             if position.permission_level < 2:
                 return Response({'error': 'You do not have permission to decline this slip.'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -318,6 +330,11 @@ class SlipsView(APIView):
             slip.declined = True
 
             slip.save()
+
+            log = Log.objects.create(user=request.user, action=action)
+            log.slip = slip
+            log.gear.set(slip.gear_borrowed.all())
+            log.save()
 
             return Response({'message': 'Slip was successfully declined.'}, status=status.HTTP_200_OK)
         elif action == 'accept':
@@ -329,6 +346,11 @@ class SlipsView(APIView):
                 slip.managing_editor_signature = True
             elif section == 'executive' and designation == 'editor_in_chief':
                 slip.editor_in_chief_signature = True
+
+                log = Log.objects.create(user=request.user, action='slip_confirmed')
+                log.slip = slip
+                log.gear.set(slip.gear_borrowed.all())
+                log.save()
             else:
                 return Response({'error': 'You have unauthorized section and designation.'}, status=status.HTTP_403_FORBIDDEN)
 
