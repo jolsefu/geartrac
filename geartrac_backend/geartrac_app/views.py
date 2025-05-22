@@ -174,9 +174,26 @@ class LogsView(APIView):
         if not request.user.log_access():
             return Response({'error': 'You do not have permission to view logs'}, status=status.HTTP_403_FORBIDDEN)
 
+        search_query = request.query_params.get('search', '')
+
         logs = Log.objects.all()
-        serializer = LogSerializer(logs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        if search_query:
+            logs = logs.annotate(
+                similarity=TrigramSimilarity(
+                    'action',
+                    search_query
+                )).filter(similarity__gt=0.3).order_by('-similarity')
+        else:
+            logs = logs.order_by('-timestamp')
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 5
+
+        result_page = paginator.paginate_queryset(logs, request)
+        serializer = LogSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
 class SlipsView(APIView):
     permission_classes = [IsAuthenticated]
