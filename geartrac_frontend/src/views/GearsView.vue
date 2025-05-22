@@ -19,6 +19,8 @@ const returnDatePicked = ref();
 const conditionBefore = ref();
 const isVisible = ref();
 const currentGear = ref({});
+const unuseToggle = ref(false);
+const useToggle = ref(false);
 
 const paginator = reactive({
   gears: [],
@@ -88,11 +90,24 @@ function cycleAvailability() {
   }
 }
 
-function handleCheckboxChange(id, event) {
-  if (event.target.checked) {
-    paginator.gearIds.push(id);
+function handleCheckboxChange(gear, event) {
+  const fullName = `${userDetails.value.first_name} ${userDetails.value.last_name}`;
+  const isChecked = event.target.checked;
+  const isUsedByUser = gear.used_by === fullName;
+
+  if (isChecked) {
+    if (isUsedByUser) unuseToggle.value = true;
+    else useToggle.value = true;
+
+    paginator.gearIds.push(gear.id);
   } else {
-    paginator.gearIds = paginator.gearIds.filter((gearId) => gearId !== id);
+    paginator.gearIds = paginator.gearIds.filter((gearId) => gearId !== gear.id);
+
+    const noSelectedGears = paginator.gearIds.length === 0;
+    if (noSelectedGears) {
+      unuseToggle.value = false;
+      useToggle.value = false;
+    }
   }
 }
 
@@ -202,6 +217,22 @@ function gearStatus(gear) {
   else return "Available";
 }
 
+function gearCheckbox(gear) {
+  const fullName = `${userDetails.value.first_name} ${userDetails.value.last_name}`;
+  const isUsedByUser = gear.used_by === fullName;
+
+  if (useToggle.value) {
+    return isUsedByUser;
+  }
+
+  if (unuseToggle.value) {
+    return !isUsedByUser;
+  }
+
+  if (isUsedByUser) return false;
+  return gear.used || gear.borrowed;
+}
+
 onMounted(() => {
   getGears();
   setTimeout(() => {
@@ -264,8 +295,16 @@ onMounted(() => {
                 <Button
                   class="bg-green-500 text-black hover:bg-green-600"
                   @click="useGear"
+                  v-if="useToggle"
                 >
                   Use
+                </Button>
+                <Button
+                  class="bg-red-500 text-black hover:bg-red-600"
+                  @click="unuseGear"
+                  v-if="unuseToggle"
+                >
+                  Unuse
                 </Button>
                 <Button
                   class="bg-blue-700 text-black hover:bg-blue-800"
@@ -288,8 +327,8 @@ onMounted(() => {
                     <input
                       type="checkbox"
                       :value="gear"
-                      @change="handleCheckboxChange(gear.id, $event)"
-                      :disabled="gear.used || gear.borrowed"
+                      @change="handleCheckboxChange(gear, $event)"
+                      :disabled="gearCheckbox(gear)"
                     />
                   </label>
                 </div>
@@ -337,21 +376,6 @@ onMounted(() => {
                 Borrowed by: {{ currentGear.value.borrowed_by }}
               </div>
             </DialogDescription>
-
-            <div v-if="currentGear.value.used_by">
-              <Button
-                id="unusedButton"
-                class="bg-red-500 text-black hover:bg-red-600 w-fit mt-4"
-                v-if="
-                  !currentGear.value.used_by.localeCompare(
-                    `${userDetails.first_name} ${userDetails.last_name}`
-                  )
-                "
-                @click="unuseGear(currentGear.value.id)"
-              >
-                Mark as unused
-              </Button>
-            </div>
           </DialogHeader>
         </DialogContent>
       </Dialog>
