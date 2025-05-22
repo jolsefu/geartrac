@@ -133,7 +133,7 @@ class GearsView(APIView):
                 gear.save()
 
             log = Log.objects.create(user=request.user, action=action)
-            log.gear.set(gear)
+            log.gear.set(gears)
             log.save()
 
             return Response({'message': 'Gear successfully marked as unused.'}, status=status.HTTP_200_OK)
