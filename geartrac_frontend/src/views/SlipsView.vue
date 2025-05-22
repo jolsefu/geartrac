@@ -112,7 +112,7 @@ function declineSlip(slip_id) {
 function returnSlip(slip_id) {
   api
     .put("slip/", {
-      action: "return",
+      action: "for_return",
       slip_id: slip_id,
     })
     .then((response) => {
@@ -127,10 +127,10 @@ function returnSlip(slip_id) {
     });
 }
 
-function acknowledgeReturn(slip_id) {
+function confirmReturn(slip_id) {
   api
     .put("slip/", {
-      action: "acknowledge_return",
+      action: "confirm_return",
       slip_id: slip_id,
       condition_after: conditionAfter.value,
     })
@@ -315,7 +315,7 @@ onMounted(() => {
 
                   <button
                     class="btn btn-info"
-                    @click="acknowledgeReturn(currentSlip.custom_id)"
+                    @click="confirmReturn(currentSlip.custom_id)"
                   >
                     Accept Return
                   </button>
