@@ -265,7 +265,7 @@ class SlipsView(APIView):
 
             print(slips)
         else:
-            slips = slips.order_by('custom_id')
+            slips = slips.order_by('-custom_id')
 
 
         paginator = PageNumberPagination()
