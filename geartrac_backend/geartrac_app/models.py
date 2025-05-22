@@ -142,7 +142,7 @@ class Log(models.Model):
         ('borrow', 'Borrow'),
         ('slip_confirmed', 'Slip Confirmed'),
         ('for_return', 'For Return'),
-        ('returned', 'Return'),
+        ('confirm_return', 'Confirm Return'),
         ('declined', 'Declined'),
     ]
 
