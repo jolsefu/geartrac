@@ -94,7 +94,7 @@ function acceptSlip(slip_id) {
 function declineSlip(slip_id) {
   api
     .put("slip/", {
-      action: "decline",
+      action: "declined",
       slip_id: slip_id,
     })
     .then((response) => {
