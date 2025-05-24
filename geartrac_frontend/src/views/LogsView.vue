@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, watch, onMounted } from "vue";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination.vue";
@@ -25,10 +25,34 @@ const notify = reactive({
   message: "",
 });
 
+watch(
+  () => [paginator.action, paginator.date],
+  () => {
+    isVisible.value = false;
+    setTimeout(() => {
+      isVisible.value = true;
+    }, 200);
+
+    getLogs();
+  }
+);
+
+watch(
+  () => paginator.search,
+  () => {
+    getLogs();
+  }
+);
+
 async function getLogs() {
   try {
+    if (paginator.action)
+      paginator.action = paginator.action.toLowerCase().replace(/ /g, "_");
+
     const response = await api.get("log/", {
       params: {
+        action: paginator.action,
+        date: paginator.date,
         page: paginator.currentPage,
 
         search: paginator.search,
@@ -80,16 +104,57 @@ onMounted(() => {
     >
       <div class="flex justify-center gap-2 h-screen items-end w-1/4 flex-col">
         <div>
-          <input
-            type="text"
-            placeholder="Enter Log User or Gear"
-            className="input"
-            v-model="paginator.search"
-          />
+          <label class="input">
+            <svg
+              class="h-[1em] opacity-50"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <g
+                stroke-linejoin="round"
+                stroke-linecap="round"
+                stroke-width="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </g>
+            </svg>
+            <input
+              type="search"
+              placeholder="Search Gear / Student Name"
+              v-model="paginator.search"
+            />
+          </label>
         </div>
 
         <div class="flex gap-1">
-          <Button>Action</Button>
+          <div class="dropdown dropdown-center">
+            <Button tabindex="0" role="button" class="btn m-1">{{
+              paginator.action ? paginator.action : "Action"
+            }}</Button>
+            <ul
+              tabindex="0"
+              class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm rounded-lg"
+            >
+              <li @click="paginator.action = null"><a>All</a></li>
+              <li
+                v-for="action in [
+                  'Use',
+                  'Unuse',
+                  'Borrow',
+                  'For Return',
+                  'Confirm Return',
+                  'Slip Confirmed',
+                ]"
+                :key="action"
+                @click="paginator.action = action"
+              >
+                <a>{{ action }}</a>
+              </li>
+            </ul>
+          </div>
           <!-- <Button @click="paginator.request_user_owner = !paginator.request_user_owner">
           {{ paginator.request_user_owner ? "Used by You" : "Used by Anyone" }}
         </Button>
@@ -142,16 +207,18 @@ onMounted(() => {
               >
                 <h3 class="text-lg font-bold">Action by {{ currentLog.user }}</h3>
 
-                <details class="dropdown mt-5">
-                  <summary class="btn">View Gear</summary>
+                <div class="dropdown dropdown-hover dropdown-start">
+                  <div tabindex="0" role="button" class="btn mt-2">View Gear</div>
                   <ul
-                    class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 shadow-sm"
+                    tabindex="0"
+                    class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm border"
+                    v-for="gear in currentLog.gear"
                   >
-                    <li v-for="gear in currentLog.gear">
-                      {{ gear }}
+                    <li>
+                      <a>{{ gear }}</a>
                     </li>
                   </ul>
-                </details>
+                </div>
 
                 <div class="mt-5">
                   <h3>Action: {{ currentLog.action }}</h3>
