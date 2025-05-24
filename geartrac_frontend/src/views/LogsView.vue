@@ -130,6 +130,14 @@ onMounted(() => {
         </div>
 
         <div class="flex gap-1">
+          <div>
+            <input
+              type="date"
+              class="input"
+              @change="(e) => (paginator.date = e.target.value)"
+            />
+          </div>
+
           <div class="dropdown dropdown-center">
             <Button tabindex="0" role="button" class="btn m-1">{{
               paginator.action ? paginator.action : "Action"
