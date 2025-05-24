@@ -123,11 +123,9 @@ onMounted(() => {
           </div>
           <div v-for="log in paginator.logs" class="mb-4 p-4 border rounded shadow flex">
             <Button
+              class="w-[8rem]"
               :class="getLogColor(log.action)"
-              @click="
-                currentLog = log;
-                logModal?.showModal();
-              "
+              @click="openLogModal(log)"
             >
               {{ log.action }}
             </Button>
@@ -138,9 +136,9 @@ onMounted(() => {
               {{ log.user }}
             </Button>
 
-            <dialog id="logModal" class="modal modal-bottom sm:modal-middle">
+            <dialog id="logModal" class="modal">
               <div
-                class="modal-box text-left border-2 border-white rounded-lg text-white"
+                class="modal-box text-left border-2 border-neutral-500 rounded-lg text-white w-fit"
               >
                 <h3 class="text-lg font-bold">Action by {{ currentLog.user }}</h3>
 
@@ -170,11 +168,11 @@ onMounted(() => {
                 </div>
 
                 <div v-if="currentLog.slip_id" class="mt-5 mb-5">
-                  <h3>#{{ currentLog.slip_id }}</h3>
+                  <h3>Slip #{{ currentLog.slip_id }}</h3>
                   <h3>Slipped by: {{ currentLog.slipped_by }}</h3>
                 </div>
 
-                <div class="modal-action">
+                <div class="modal-action justify-center">
                   <form method="dialog">
                     <button class="btn">Close</button>
                   </form>
