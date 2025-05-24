@@ -175,17 +175,20 @@ class LogsView(APIView):
             return Response({'error': 'You do not have permission to view logs'}, status=status.HTTP_403_FORBIDDEN)
 
         search_query = request.query_params.get('search', '')
+        action = request.query_params.get('action', '')
 
         logs = Log.objects.all()
 
         if search_query:
             logs = logs.annotate(
-                similarity=TrigramSimilarity(
-                    'action',
-                    search_query
-                )).filter(similarity__gt=0.3).order_by('-similarity')
-        else:
-            logs = logs.order_by('-timestamp')
+                similarity=TrigramSimilarity('user__username', search_query) +
+                           TrigramSimilarity('gear__name', search_query)
+            ).filter(similarity__gt=0.03).order_by('-similarity')
+
+        if action:
+            logs = logs.filter(action=action)
+
+        logs = logs.order_by('-timestamp')
 
         paginator = PageNumberPagination()
         paginator.page_size = 5
