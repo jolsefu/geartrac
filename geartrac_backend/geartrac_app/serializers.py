@@ -42,6 +42,7 @@ class LogSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     slip_id = serializers.SerializerMethodField()
     slipped_by = serializers.SerializerMethodField()
+    action = serializers.SerializerMethodField()
 
     class Meta:
         model = Log
@@ -72,6 +73,9 @@ class LogSerializer(serializers.ModelSerializer):
     def get_slipped_by(self, obj):
         if obj.slip:
             return f'{obj.slip.slipped_by.first_name} {obj.slip.slipped_by.last_name}'.strip()
+
+    def get_action(self, obj):
+        return obj.get_action_display()
 
 class SlipSerializer(serializers.ModelSerializer):
     gear_borrowed = serializers.SerializerMethodField()
