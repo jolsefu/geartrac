@@ -10,6 +10,8 @@ from .serializers import *
 from .models import *
 from geartrac_auth.models import Position
 
+from django.utils.dateparse import parse_date
+
 
 
 class GearsView(APIView):
@@ -176,8 +178,13 @@ class LogsView(APIView):
 
         search_query = request.query_params.get('search', '')
         action = request.query_params.get('action', '')
+        date = request.query_params.get('date', '')
 
         logs = Log.objects.all()
+
+        if date:
+            date = parse_date(date)
+            logs = logs.filter(timestamp__date=date)
 
         if search_query:
             logs = logs.annotate(

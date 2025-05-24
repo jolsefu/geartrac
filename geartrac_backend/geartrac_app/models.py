@@ -164,7 +164,7 @@ class Log(models.Model):
     )
 
     action = models.CharField(max_length=50, choices=actions)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f'{self.user.email} - {self.action} - {self.timestamp}'
