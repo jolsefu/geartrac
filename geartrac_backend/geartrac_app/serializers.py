@@ -53,7 +53,6 @@ class LogSerializer(serializers.ModelSerializer):
             'slipped_by',
             'action',
             'timestamp',
-            'slip'
         ]
 
     def get_user(self, obj):
