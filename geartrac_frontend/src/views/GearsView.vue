@@ -18,7 +18,7 @@ import "cally";
 const returnDatePicked = ref();
 const conditionBefore = ref();
 const isVisible = ref();
-const currentGear = ref({});
+const currentGear = reactive({});
 const unuseToggle = ref(false);
 const useToggle = ref(false);
 
@@ -279,7 +279,7 @@ onMounted(() => {
 
           <div class="flex items-center h-screen text-center w-1/2">
             <div class="container mx-auto px-4 w-fit mt-2">
-              <div class="">
+              <div>
                 <Pagination
                   v-if="paginator.gears.length"
                   :total-items="paginator.pagesCount"
@@ -339,7 +339,7 @@ onMounted(() => {
                   <DialogTrigger as-child>
                     <Button
                       class="bg-white text-black hover:bg-[#cccccc] hover:text-black"
-                      @click="currentGear.value = gear"
+                      @click="Object.assign(currentGear, gear)"
                     >
                       {{ gear.name }}
                       <span class="text-[#4e4e4e]">
@@ -356,24 +356,19 @@ onMounted(() => {
         <DialogContent class="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
-              {{ currentGear.value.name }}
-              {{ currentGear.value.property_number }}
+              {{ currentGear.name }}
+              {{ currentGear.property_number }}
             </DialogTitle>
             <DialogDescription>
-              <div
-                v-if="!currentGear.value.used && !currentGear.value.borrowed"
-                class="text-white"
-              >
+              <div v-if="!currentGear.used && !currentGear.borrowed" class="text-white">
                 This gear is available.
               </div>
               <br />
-              <div>{{ currentGear.value.unit_description }}</div>
-              <div>Owner: {{ currentGear.value.owner }}</div>
-              <div v-if="currentGear.value.used_by">
-                Used by: {{ currentGear.value.used_by }}
-              </div>
-              <div v-if="currentGear.value.borrowed_by">
-                Borrowed by: {{ currentGear.value.borrowed_by }}
+              <div>{{ currentGear.unit_description }}</div>
+              <div>Owner: {{ currentGear.owner }}</div>
+              <div v-if="currentGear.used_by">Used by: {{ currentGear.used_by }}</div>
+              <div v-if="currentGear.borrowed_by">
+                Borrowed by: {{ currentGear.borrowed_by }}
               </div>
             </DialogDescription>
           </DialogHeader>
