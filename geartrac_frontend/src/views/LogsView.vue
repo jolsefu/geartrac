@@ -83,7 +83,7 @@ function getLogColor(logAction) {
 
 function openLogModal(log) {
   Object.assign(currentLog, log);
-  document.querySelector("#logModal").showModal();
+  document.querySelector("#log-modal").showModal();
 }
 
 onMounted(() => {
@@ -134,7 +134,7 @@ onMounted(() => {
             <input
               type="date"
               class="input"
-              :value="paginator.date"
+              v-model="paginator.date"
               @change="(e) => (paginator.date = e.target.value)"
             />
           </div>
@@ -200,7 +200,7 @@ onMounted(() => {
               {{ log.user }}
             </Button>
 
-            <dialog id="logModal" class="modal">
+            <dialog id="log-modal" class="modal">
               <div
                 class="modal-box text-left border-2 border-neutral-500 rounded-lg text-white max-w-1/2"
               >

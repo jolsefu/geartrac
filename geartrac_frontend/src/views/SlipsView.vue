@@ -76,7 +76,7 @@ function acceptSlip(slip_id) {
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
       notify.success = true;
 
-      document.querySelector("#slipModal").close();
+      document.querySelector("#slip-modal").close();
       getSlips();
     })
     .catch((error) => {
@@ -97,7 +97,7 @@ function declineSlip(slip_id) {
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
       notify.success = true;
 
-      document.querySelector("#slipModal").close();
+      document.querySelector("#slip-modal").close();
       getSlips();
     })
     .catch((error) => {
@@ -118,7 +118,7 @@ function returnSlip(slip_id) {
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
       notify.success = true;
 
-      document.querySelector("#slipModal").close();
+      document.querySelector("#slip-modal").close();
       getSlips();
     })
     .catch((error) => {
@@ -140,7 +140,7 @@ function confirmReturn(slip_id) {
       notify.messageTitle = response.status === 200 ? "Success" : "Error";
       notify.success = true;
 
-      document.querySelector("#slipModal").close();
+      document.querySelector("#slip-modal").close();
       getSlips();
     })
     .catch((error) => {
@@ -158,7 +158,7 @@ function handleConditionAfter(e) {
 
 function openSlipModal(slip) {
   Object.assign(currentSlip, slip);
-  document.querySelector("#slipModal").showModal();
+  document.querySelector("#slip-modal").showModal();
 }
 
 onMounted(() => {
@@ -240,7 +240,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <dialog id="slipModal" class="modal">
+        <dialog id="slip-modal" class="modal">
           <div
             class="modal-box flex justify-center text-left border-2 border-neutral-500 rounded-lg text-white max-w-[40rem]"
           >
