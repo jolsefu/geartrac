@@ -46,12 +46,12 @@ watch(
 
 async function getLogs() {
   try {
-    if (paginator.action)
-      paginator.action = paginator.action.toLowerCase().replace(/ /g, "_");
+    const action = null;
+    if (paginator.action) action = paginator.action.toLowerCase().replace(/ /g, "_");
 
     const response = await api.get("log/", {
       params: {
-        action: paginator.action,
+        action: action,
         date: paginator.date,
         page: paginator.currentPage,
 
@@ -140,7 +140,7 @@ onMounted(() => {
 
           <div class="dropdown dropdown-center">
             <Button tabindex="0" role="button" class="btn m-1">{{
-              paginator.action ? paginator.action : "Action"
+              paginator.action ? paginator.action : "All"
             }}</Button>
             <ul
               tabindex="0"
