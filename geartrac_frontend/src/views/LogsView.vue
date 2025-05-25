@@ -134,6 +134,7 @@ onMounted(() => {
             <input
               type="date"
               class="input"
+              :value="paginator.date"
               @change="(e) => (paginator.date = e.target.value)"
             />
           </div>
@@ -163,16 +164,6 @@ onMounted(() => {
               </li>
             </ul>
           </div>
-          <!-- <Button @click="paginator.request_user_owner = !paginator.request_user_owner">
-          {{ paginator.request_user_owner ? "Used by You" : "Used by Anyone" }}
-        </Button>
-        <Button @click="cycleAvailability">{{
-          paginator.available === null
-            ? "All"
-            : paginator.available
-            ? "Available"
-            : "Unavailable"
-        }}</Button> -->
         </div>
       </div>
 
@@ -211,7 +202,7 @@ onMounted(() => {
 
             <dialog id="logModal" class="modal">
               <div
-                class="modal-box text-left border-2 border-neutral-500 rounded-lg text-white w-fit"
+                class="modal-box text-left border-2 border-neutral-500 rounded-lg text-white max-w-1/2"
               >
                 <h3 class="text-lg font-bold">Action by {{ currentLog.user }}</h3>
 
@@ -220,9 +211,8 @@ onMounted(() => {
                   <ul
                     tabindex="0"
                     class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm border"
-                    v-for="gear in currentLog.gear"
                   >
-                    <li>
+                    <li v-for="gear in currentLog.gear">
                       <a>{{ gear }}</a>
                     </li>
                   </ul>
