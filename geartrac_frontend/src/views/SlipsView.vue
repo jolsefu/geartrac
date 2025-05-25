@@ -3,14 +3,6 @@ import { ref, reactive, onMounted, watch } from "vue";
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import { userPermissionLevel, userDetails } from "@/auth";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import Notify from "@/components/Notify.vue";
 import Pagination from "@/components/Pagination.vue";
 
@@ -213,271 +205,64 @@ onMounted(() => {
         v-if="paginator.slips.length"
         class="flex items-center h-screen text-center w-1/2"
       >
-        <Dialog>
-          <div class="container mx-auto px-4 w-fit mt-2">
-            <Pagination
-              :total-items="paginator.pagesCount"
-              :current-page="paginator.currentPage"
-              :next="paginator.next"
-              :previous="paginator.previous"
-              class="mb-5"
-              @update:current-page="(n) => (paginator.currentPage = n)"
-              @update-page="getSlips()"
-            />
+        <div class="container mx-auto px-4 w-fit mt-2">
+          <Pagination
+            :total-items="paginator.pagesCount"
+            :current-page="paginator.currentPage"
+            :next="paginator.next"
+            :previous="paginator.previous"
+            class="mb-5"
+            @update:current-page="(n) => (paginator.currentPage = n)"
+            @update-page="getSlips()"
+          />
 
-            <div
-              v-for="slip in paginator.slips"
-              class="mb-4 p-4 border rounded shadow flex"
-            >
-              <div class="flex justify-center items-center flex-col">
-                <div>
-                  {{ slip.for_return ? "(For Return)" : "" }}
-                </div>
-                <div>Slip #{{ slip.custom_id }}</div>
+          <div
+            v-for="slip in paginator.slips"
+            class="mb-4 p-4 border rounded shadow flex"
+          >
+            <div class="flex justify-center items-center flex-col">
+              <div>
+                {{ slip.for_return ? "(For Return)" : "" }}
               </div>
-              <div class="border-l h-12 mx-4"></div>
-              <div class="flex justify-center items-center">
-                <h2>
-                  <Button
-                    class="bg-white text-black hover:bg-[#cccccc] hover:text-black"
-                    @click="openSlipModal(slip)"
-                  >
-                    View More
-                  </Button>
-                </h2>
-              </div>
+              <div>Slip #{{ slip.custom_id }}</div>
+            </div>
+            <div class="border-l h-12 mx-4"></div>
+            <div class="flex justify-center items-center">
+              <h2>
+                <Button
+                  class="bg-white text-black hover:bg-[#cccccc] hover:text-black"
+                  @click="openSlipModal(slip)"
+                >
+                  View More
+                </Button>
+              </h2>
             </div>
           </div>
+        </div>
 
-          <dialog id="slipModal" class="modal">
-            <div
-              class="modal-box flex justify-center text-left border-2 border-neutral-500 rounded-lg text-white max-w-[40rem]"
-            >
-              <div>
-                <h3 class="text-lg font-bold">
-                  {{ currentSlip.slipped_by }}
-                </h3>
+        <dialog id="slipModal" class="modal">
+          <div
+            class="modal-box flex justify-center text-left border-2 border-neutral-500 rounded-lg text-white max-w-[40rem]"
+          >
+            <div>
+              <h3 class="text-lg font-bold">
+                {{ currentSlip.slipped_by }}
+              </h3>
 
-                <div class="dropdown dropdown-hover dropdown-start">
-                  <div tabindex="0" role="button" class="btn mt-2">View Gear</div>
-                  <ul
-                    tabindex="0"
-                    class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm border"
-                    v-for="gear in currentSlip.gear_borrowed"
-                  >
-                    <li>
-                      <a>{{ gear }}</a>
-                    </li>
-                  </ul>
-                </div>
-
-                <div class="mt-5">
-                  <div class="capitalize">
-                    Condition Before: {{ currentSlip.condition_before }}
-                  </div>
-                  <div v-if="paginator.archived" class="capitalize">
-                    Condition After: {{ currentSlip.condition_after }}
-                  </div>
-                  <div>
-                    Borrowed Date:
-                    {{ new Date(currentSlip.borrowed_date).toLocaleString() }}
-                  </div>
-                  <div>
-                    Expected Return Date:
-                    {{ new Date(currentSlip.expected_return_date).toLocaleString() }}
-                  </div>
-                  <div v-if="paginator.archived">
-                    Return Date: {{ new Date(currentSlip.return_date).toLocaleString() }}
-                  </div>
-                </div>
-
-                <div class="mt-5 flex flex-col">
-                  <div class="flex items-center">
-                    <div v-if="!paginator.archived">
-                      <button
-                        v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
-                        class="btn btn-success"
-                        @click="acceptSlip(currentSlip.custom_id)"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
-                        class="btn btn-warning"
-                        @click="declineSlip(currentSlip.custom_id)"
-                      >
-                        Decline
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <button
-                      v-if="
-                        currentSlip.editor_in_chief_signature &&
-                        currentSlip.slipped_by ===
-                          `${userDetails.first_name} ${userDetails.last_name}` &&
-                        !(currentSlip.returned || currentSlip.declined)
-                      "
-                      class="btn btn-info"
-                      @click="returnSlip(currentSlip.custom_id)"
-                    >
-                      Return
-                    </button>
-                  </div>
-
-                  <div v-if="userPermissionLevel >= 2 && currentSlip.for_return">
-                    <button
-                      class="btn btn-success"
-                      popovertarget="condition-popover"
-                      style="anchor-name: --anchor-1"
-                    >
-                      {{ conditionAfter || "Condition After" }}
-                    </button>
-                    <ul
-                      class="dropdown menu w-52 rounded-box bg-base-100 shadow-sm"
-                      popover
-                      id="condition-popover"
-                      style="position-anchor: --anchor-1"
-                    >
-                      <li><a @click="(e) => handleConditionAfter(e)">Great</a></li>
-                      <li><a @click="(e) => handleConditionAfter(e)">Good</a></li>
-                      <li><a @click="(e) => handleConditionAfter(e)">Bad</a></li>
-                      <li><a @click="(e) => handleConditionAfter(e)">Broken</a></li>
-                    </ul>
-
-                    <button
-                      class="btn btn-info"
-                      @click="confirmReturn(currentSlip.custom_id)"
-                    >
-                      Accept Return
-                    </button>
-                  </div>
-
-                  <div class="modal-action justify-start">
-                    <form method="dialog">
-                      <button class="btn">Close</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-
-              <div class="divider divider-horizontal"></div>
-
-              <div class="flex ml-5 items-center">
-                <ul class="timeline timeline-vertical timeline-compact">
+              <div class="dropdown dropdown-hover dropdown-start">
+                <div tabindex="0" role="button" class="btn mt-2">View Gear</div>
+                <ul
+                  tabindex="0"
+                  class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm border"
+                  v-for="gear in currentSlip.gear_borrowed"
+                >
                   <li>
-                    <div class="timeline-start timeline-box">Section Editor</div>
-                    <div class="timeline-middle">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        class="h-5 w-5"
-                        :class="{ 'text-success': currentSlip.section_editor_signature }"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <hr :class="{ 'bg-success': currentSlip.section_editor_signature }" />
-                  </li>
-                  <li>
-                    <hr :class="{ 'bg-success': currentSlip.section_editor_signature }" />
-                    <div class="timeline-start timeline-box">Circulations Manager</div>
-                    <div class="timeline-middle">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        class="h-5 w-5"
-                        :class="{
-                          'text-success': currentSlip.circulations_manager_signature,
-                        }"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <hr
-                      :class="{
-                        'bg-success': currentSlip.circulations_manager_signature,
-                      }"
-                    />
-                  </li>
-                  <li>
-                    <hr
-                      :class="{
-                        'bg-success': currentSlip.circulations_manager_signature,
-                      }"
-                    />
-                    <div class="timeline-start timeline-box">Managing Editor</div>
-                    <div class="timeline-middle">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        class="h-5 w-5"
-                        :class="{
-                          'text-success': currentSlip.managing_editor_signature,
-                        }"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <hr
-                      :class="{
-                        'bg-success': currentSlip.managing_editor_signature,
-                      }"
-                    />
-                  </li>
-                  <li>
-                    <hr
-                      :class="{
-                        'bg-success': currentSlip.managing_editor_signature,
-                      }"
-                    />
-                    <div class="timeline-start timeline-box">Editor-in-Chief</div>
-                    <div class="timeline-middle">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        class="h-5 w-5"
-                        :class="{
-                          'text-success': currentSlip.editor_in_chief_signature,
-                        }"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                    </div>
+                    <a>{{ gear }}</a>
                   </li>
                 </ul>
               </div>
-            </div>
-          </dialog>
 
-          <DialogContent class="sm:max-w-[600px] flex">
-            <DialogHeader class="flex flex-col justify-center items-center">
-              <div class="flex mb-3">
-                <DialogTitle> {{ currentSlip.slipped_by }} </DialogTitle>
-              </div>
-
-              <DialogDescription>
+              <div class="mt-5">
                 <div class="capitalize">
                   Condition Before: {{ currentSlip.condition_before }}
                 </div>
@@ -495,7 +280,7 @@ onMounted(() => {
                 <div v-if="paginator.archived">
                   Return Date: {{ new Date(currentSlip.return_date).toLocaleString() }}
                 </div>
-              </DialogDescription>
+              </div>
 
               <div class="mt-5 flex flex-col">
                 <div class="flex items-center">
@@ -517,22 +302,24 @@ onMounted(() => {
                   </div>
                 </div>
 
-                <button
-                  v-if="
-                    currentSlip.editor_in_chief_signature &&
-                    currentSlip.slipped_by ===
-                      `${userDetails.first_name} ${userDetails.last_name}` &&
-                    !(currentSlip.returned || currentSlip.declined)
-                  "
-                  class="btn btn-info"
-                  @click="returnSlip(currentSlip.custom_id)"
-                >
-                  Return
-                </button>
+                <div>
+                  <button
+                    v-if="
+                      currentSlip.editor_in_chief_signature &&
+                      currentSlip.slipped_by ===
+                        `${userDetails.first_name} ${userDetails.last_name}` &&
+                      !(currentSlip.returned || currentSlip.declined)
+                    "
+                    class="btn btn-info"
+                    @click="returnSlip(currentSlip.custom_id)"
+                  >
+                    Return
+                  </button>
+                </div>
 
                 <div v-if="userPermissionLevel >= 2 && currentSlip.for_return">
                   <button
-                    class="btn btn-info"
+                    class="btn btn-success"
                     popovertarget="condition-popover"
                     style="anchor-name: --anchor-1"
                   >
@@ -558,20 +345,17 @@ onMounted(() => {
                   </button>
                 </div>
 
-                <details class="dropdown">
-                  <summary class="btn">View Borrowed Gear</summary>
-                  <ul
-                    class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 shadow-sm"
-                  >
-                    <li v-for="gear in currentSlip.gear_borrowed">
-                      {{ gear }}
-                    </li>
-                  </ul>
-                </details>
+                <div class="modal-action justify-start">
+                  <form method="dialog">
+                    <button class="btn">Close</button>
+                  </form>
+                </div>
               </div>
-            </DialogHeader>
+            </div>
 
-            <div class="ml-5">
+            <div class="divider divider-horizontal"></div>
+
+            <div class="flex ml-5 items-center">
               <ul class="timeline timeline-vertical timeline-compact">
                 <li>
                   <div class="timeline-start timeline-box">Section Editor</div>
@@ -613,12 +397,16 @@ onMounted(() => {
                     </svg>
                   </div>
                   <hr
-                    :class="{ 'bg-success': currentSlip.circulations_manager_signature }"
+                    :class="{
+                      'bg-success': currentSlip.circulations_manager_signature,
+                    }"
                   />
                 </li>
                 <li>
                   <hr
-                    :class="{ 'bg-success': currentSlip.circulations_manager_signature }"
+                    :class="{
+                      'bg-success': currentSlip.circulations_manager_signature,
+                    }"
                   />
                   <div class="timeline-start timeline-box">Managing Editor</div>
                   <div class="timeline-middle">
@@ -671,8 +459,8 @@ onMounted(() => {
                 </li>
               </ul>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </dialog>
       </div>
     </div>
   </Transition>
