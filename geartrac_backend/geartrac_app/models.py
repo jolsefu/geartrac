@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from geartrac_auth.models import Position
 
+from notifications.models import Notification as BaseNotification
+
 
 
 def log_access(self):
@@ -169,11 +171,10 @@ class Log(models.Model):
     def __str__(self):
         return f'{self.user.email} - {self.action} - {self.timestamp}'
 
-class Notification(models.Model):
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    message = models.TextField()
-    read = models.BooleanField(default=False)
+class Notification(BaseNotification):
+    custom_recipient = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"To {self.recipient}: {self.message[:20]}"
+    class Meta:
+        ordering = ['-timestamp']
