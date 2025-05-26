@@ -396,24 +396,34 @@ class NotifyView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        notification_ids = request.data.get('notification_ids')
         action = request.data.get('action')
 
         if action == 'mark_as_read':
+            notification_id = request.data.get('notification_id')
+
             try:
-                notifications = CustomNotification.objects.filter(id__in=notification_ids)
+                notification = CustomNotification.objects.get(id=notification_id)
             except CustomNotification.DoesNotExist:
                 return Response({'error': 'Invalid notification id'}, status=status.HTTP_400_BAD_REQUEST)
 
-            for notification in notifications:
-                notification.read = True
-                notification.save()
+            notification.read = True
+            notification.save()
 
         if action == 'mark_all_as_read':
             notifications = CustomNotification.objects.filter(recipient=request.user, read=False)
             for notification in notifications:
                 notification.read = True
                 notification.save()
+
+        if action == "delete_notification":
+            notification_id = request.data.get('notification_id')
+
+            try:
+                notification = CustomNotification.objects.filter(id=notification_id)
+            except CustomNotification.DoesNotExist:
+                return Response({'error': 'Invalid notification id'}, status=status.HTTP_400_BAD_REQUEST)
+
+            notification.delete()
 
         return Response({"message": "Success"}, status=status.HTTP_200_OK)
         # slip = serializer.save(created_by=self.request.user)

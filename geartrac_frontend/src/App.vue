@@ -59,15 +59,32 @@ function openNotificationModal(notification) {
   Object.assign(currentNotification, notification);
   document.querySelector("#notification-modal").showModal();
 
-  api.post("notification/", {
-    action: "mark_as_read",
-    notification_ids: [notification.id],
-  });
+  if (!notification.read)
+    api.post("notification/", {
+      action: "mark_as_read",
+      notification_id: notification.id,
+    });
 }
 
 function markAllAsRead() {
   api.post("notification/", {
     action: "mark_all_as_read",
+  });
+}
+
+function deleteNotification(notification_id) {
+  document.querySelector("#notification-modal").close();
+
+  const index = notifications.value.findIndex(
+    (notification) => notification.id === notification_id
+  );
+  if (index !== -1) {
+    notifications.value.splice(index, 1);
+  }
+
+  api.post("notification/", {
+    action: "delete_notification",
+    notification_id: notification_id,
   });
 }
 
@@ -293,9 +310,11 @@ onBeforeUnmount(() => {
     <div
       class="modal-box text-left border-2 border-neutral-500 rounded-lg text-white max-w-1/2"
     >
-      <div>
+      <div class="text-wrap">
         <h3 class="text-lg font-bold">
-          {{ currentNotification.message }}
+          <div style="word-wrap: break-word; white-space: pre-wrap">
+            {{ currentNotification.message }}
+          </div>
         </h3>
 
         <div>
@@ -315,9 +334,19 @@ onBeforeUnmount(() => {
           </span>
         </div>
       </div>
+
+      <div
+        tabindex="0"
+        role="button"
+        class="btn rounded-lg bg-red-500 mt-5"
+        @click="deleteNotification(currentNotification.id)"
+      >
+        Delete
+      </div>
+
       <div class="modal-action justify-start">
         <form method="dialog">
-          <button class="btn">Close</button>
+          <button class="btn rounded-lg">Close</button>
         </form>
       </div>
     </div>
