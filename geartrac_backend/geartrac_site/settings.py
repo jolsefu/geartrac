@@ -28,6 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
+    'daphne',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -196,4 +198,12 @@ REST_FRAMEWORK = {
         # 'rest_framework.authentication.SessionAuthentication',
         # 'rest_framework.authentication.TokenAuthentication',
     ]
+}
+
+ASGI_APPLICATION = "geartrac_site.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
 }

@@ -37,7 +37,6 @@ def get_csrf_token(request):
     Create only accounts that ends with carsu.edu.ph
 """
 
-
 @receiver(post_save, sender=User)
 def check_email_domain(sender, instance, created, **kwargs):
     if created and not instance.email.endswith("@carsu.edu.ph"):

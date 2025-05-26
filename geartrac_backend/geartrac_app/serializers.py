@@ -115,11 +115,11 @@ class SlipSerializer(serializers.ModelSerializer):
             return f'{obj.slipped_by.username}'
         return None
 
-# class NotificationSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Notification
-#         fields = [
-#             'message',
-#             'timestamp',
-#             'read',
-#         ]
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomNotification
+        fields = [
+            'message',
+            'timestamp',
+            'read',
+        ]

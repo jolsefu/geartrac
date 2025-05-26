@@ -12,6 +12,8 @@ from geartrac_auth.models import Position
 
 from django.utils.dateparse import parse_date
 
+from .utils import create_and_send_notification
+
 
 
 class GearsView(APIView):
@@ -390,12 +392,15 @@ class SlipsView(APIView):
 
             return Response({'message': 'Slip was accepted.'}, status=status.HTTP_200_OK)
 
-# class NotificationsView(APIView):
-#     permission_classes = [IsAuthenticated]
+class NotifyView(APIView):
+    permission_classes = [IsAuthenticated]
 
-#     def get(self, request):
-#         notifications = Notification.objects.filter(custom_recipient=request.user)
-#         print(notifications)
-#         serializer = NotificationSerializer(notifications, many=True)
-
-#         return Response(serializer.data, status=status.HTTP_200_OK)
+    def post(self, request):
+        return Response({"message": "ello"}, status.HTTP_200_OK)
+        # slip = serializer.save(created_by=self.request.user)
+        # approver = get_supervisor_user()
+        # create_and_send_notification(
+        #     approver,
+        #     f"New borrow slip #{slip.id} requires approval.",
+        #     link=f"/slips/{slip.id}"
+        # )
