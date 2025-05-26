@@ -1,8 +1,10 @@
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
+import { api } from "./api";
 import { isAuthenticated, userPermissionLevel } from "@/auth";
 
 const isMenuOpen = ref(false);
+const currentNotification = reactive({});
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
@@ -13,6 +15,54 @@ const show = ref(false);
 setTimeout(() => {
   show.value = true;
 }, 500);
+
+// Notifications
+
+import { onMounted, onBeforeUnmount } from "vue";
+
+const notifications = ref([]);
+
+let socket;
+
+onMounted(() => {
+  socket = new WebSocket("ws://localhost:8000/ws/notifications/");
+
+  socket.onopen = () => {
+    console.log("WebSocket connected");
+  };
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.type == "initial_notifications") {
+      data.notifications.forEach((notification) => {
+        notifications.value.push(notification);
+      });
+    } else if (data.type == "notification_update") {
+      notifications.value.unshift(data.notification);
+    }
+
+    api
+      .post("notify/")
+      .then((response) => {})
+      .catch((error) => {});
+  };
+
+  socket.onclose = () => {
+    console.log("WebSocket disconnected");
+  };
+});
+
+function openNotificationModal(notification) {
+  Object.assign(currentNotification, notification);
+  document.querySelector("#notification-modal").showModal();
+}
+
+onBeforeUnmount(() => {
+  if (socket) {
+    socket.close();
+  }
+});
 </script>
 
 <template>
@@ -76,8 +126,75 @@ setTimeout(() => {
           >
             Log In
           </RouterLink>
+          <div v-if="isAuthenticated" class="dropdown dropdown-center">
+            <div
+              tabindex="0"
+              role="button"
+              class="btn m-1 flex justify-center items-center rounded-lg"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#FFFFFF"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"
+                ></path>
+              </svg>
+            </div>
+            <ul
+              tabindex="0"
+              class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm rounded-lg"
+            >
+              <li
+                v-for="notification in notifications"
+                class="text-white flex flex-col"
+                @click="openNotificationModal(notification)"
+              >
+                <div class="rounded-lg">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="8"
+                    height="8"
+                    fill="gray"
+                    viewBox="0 0 24 24"
+                    class="inline-block mr-2"
+                    v-if="!notification.read"
+                  >
+                    <circle cx="12" cy="12" r="8" />
+                  </svg>
+                  {{
+                    notification.message.length > 10
+                      ? notification.message.slice(0, 10) + "..."
+                      : notification.message
+                  }}
+                  <br />
+                  <span class="text-gray-500">
+                    {{
+                      (() => {
+                        const now = new Date();
+                        const notificationTime = new Date(notification.timestamp);
+                        const elapsed = Math.floor((now - notificationTime) / 1000);
+
+                        if (elapsed < 60) return "Now";
+                        if (elapsed < 3600) return `${Math.floor(elapsed / 60)}m`;
+                        if (elapsed < 86400) return `${Math.floor(elapsed / 3600)}h`;
+                        return `${Math.floor(elapsed / 86400)}d`;
+                      })()
+                    }}
+                  </span>
+                </div>
+              </li>
+            </ul>
+          </div>
           <RouterLink
-            v-else
+            v-if="isAuthenticated"
             to="/login"
             class="hidden md:block text-white px-4 py-2 bg-[#3b3b3b] hover:bg-[#505050] rounded-lg transition duration-300"
           >
@@ -152,6 +269,52 @@ setTimeout(() => {
       </div>
     </nav>
   </Transition>
+
+  <dialog id="notification-modal" class="modal">
+    <div
+      class="modal-box text-left border-2 border-neutral-500 rounded-lg text-white w-fit"
+    >
+      <div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="8"
+          height="8"
+          fill="gray"
+          viewBox="0 0 24 24"
+          class="inline-block mr-2"
+          v-if="!currentNotification.read"
+        >
+          <circle cx="12" cy="12" r="8" />
+        </svg>
+
+        <h3 class="text-lg font-bold">
+          {{ currentNotification.message }}
+        </h3>
+
+        <div>
+          <span class="text-gray-500">
+            {{
+              (() => {
+                const now = new Date();
+                const notificationTime = new Date(currentNotification.timestamp);
+                const elapsed = Math.floor((now - notificationTime) / 1000);
+
+                if (elapsed < 60) return "Now";
+                if (elapsed < 3600) return `${Math.floor(elapsed / 60)}m`;
+                if (elapsed < 86400) return `${Math.floor(elapsed / 3600)}h`;
+                return `${Math.floor(elapsed / 86400)}d`;
+              })()
+            }}
+          </span>
+        </div>
+      </div>
+      <div class="modal-action justify-start">
+        <form method="dialog">
+          <button class="btn">Close</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
 
   <RouterView />
 </template>
