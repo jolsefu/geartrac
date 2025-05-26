@@ -390,12 +390,12 @@ class SlipsView(APIView):
 
             return Response({'message': 'Slip was accepted.'}, status=status.HTTP_200_OK)
 
-class NotificationsView(APIView):
-    permission_classes = [IsAuthenticated]
+# class NotificationsView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        notifications = Notification.objects.filter(custom_recipient=request.user)
-        print(notifications)
-        serializer = NotificationSerializer(notifications, many=True)
+#     def get(self, request):
+#         notifications = Notification.objects.filter(custom_recipient=request.user)
+#         print(notifications)
+#         serializer = NotificationSerializer(notifications, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.data, status=status.HTTP_200_OK)

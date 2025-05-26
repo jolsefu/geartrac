@@ -6,4 +6,4 @@ from .models import *
 admin.site.register(Gear)
 admin.site.register(Slip)
 admin.site.register(Log)
-admin.site.register(Notification)
+admin.site.register(CustomNotification)

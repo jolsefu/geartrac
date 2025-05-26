@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 
     'django_extensions',
-    'notifications',
     'channels',
 ]
 
