@@ -119,6 +119,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomNotification
         fields = [
+            'id',
             'message',
             'timestamp',
             'read',

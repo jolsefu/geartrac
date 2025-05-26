@@ -396,7 +396,26 @@ class NotifyView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        return Response({"message": "ello"}, status.HTTP_200_OK)
+        notification_ids = request.data.get('notification_ids')
+        action = request.data.get('action')
+
+        if action == 'mark_as_read':
+            try:
+                notifications = CustomNotification.objects.filter(id__in=notification_ids)
+            except CustomNotification.DoesNotExist:
+                return Response({'error': 'Invalid notification id'}, status=status.HTTP_400_BAD_REQUEST)
+
+            for notification in notifications:
+                notification.read = True
+                notification.save()
+
+        if action == 'mark_all_as_read':
+            notifications = CustomNotification.objects.filter(recipient=request.user, read=False)
+            for notification in notifications:
+                notification.read = True
+                notification.save()
+
+        return Response({"message": "Success"}, status=status.HTTP_200_OK)
         # slip = serializer.save(created_by=self.request.user)
         # approver = get_supervisor_user()
         # create_and_send_notification(

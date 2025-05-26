@@ -7,8 +7,6 @@ from .serializers import NotificationSerializer
 
 @receiver(post_save, sender=CustomNotification)
 def send_notification_update(sender, instance, created, **kwargs):
-    print("Send update")
-
     channel_layer = get_channel_layer()
     group_name = f"user_{instance.recipient.id}"
 

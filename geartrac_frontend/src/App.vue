@@ -39,13 +39,15 @@ onMounted(() => {
         notifications.value.push(notification);
       });
     } else if (data.type == "notification_update") {
-      notifications.value.unshift(data.notification);
+      const existingIndex = notifications.value.findIndex(
+        (notification) => notification.id === data.notification.id
+      );
+      if (existingIndex !== -1) {
+        notifications.value[existingIndex] = data.notification;
+      } else {
+        notifications.value.unshift(data.notification);
+      }
     }
-
-    api
-      .post("notify/")
-      .then((response) => {})
-      .catch((error) => {});
   };
 
   socket.onclose = () => {
@@ -56,6 +58,17 @@ onMounted(() => {
 function openNotificationModal(notification) {
   Object.assign(currentNotification, notification);
   document.querySelector("#notification-modal").showModal();
+
+  api.post("notification/", {
+    action: "mark_as_read",
+    notification_ids: [notification.id],
+  });
+}
+
+function markAllAsRead() {
+  api.post("notification/", {
+    action: "mark_all_as_read",
+  });
 }
 
 onBeforeUnmount(() => {
@@ -191,6 +204,12 @@ onBeforeUnmount(() => {
                   </span>
                 </div>
               </li>
+              <div
+                class="text-blue-500 mt-2 flex justify-center hover:cursor-pointer"
+                @click="markAllAsRead"
+              >
+                Mark all as read
+              </div>
             </ul>
           </div>
           <RouterLink
@@ -272,21 +291,9 @@ onBeforeUnmount(() => {
 
   <dialog id="notification-modal" class="modal">
     <div
-      class="modal-box text-left border-2 border-neutral-500 rounded-lg text-white w-fit"
+      class="modal-box text-left border-2 border-neutral-500 rounded-lg text-white max-w-1/2"
     >
       <div>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="8"
-          height="8"
-          fill="gray"
-          viewBox="0 0 24 24"
-          class="inline-block mr-2"
-          v-if="!currentNotification.read"
-        >
-          <circle cx="12" cy="12" r="8" />
-        </svg>
-
         <h3 class="text-lg font-bold">
           {{ currentNotification.message }}
         </h3>
