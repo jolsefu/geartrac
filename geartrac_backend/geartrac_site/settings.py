@@ -54,6 +54,8 @@ INSTALLED_APPS = [
 
     'django_extensions',
     'channels',
+
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -207,3 +209,7 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'

@@ -104,6 +104,19 @@ class GearsView(APIView):
             log.gear.set(gears)
             log.save()
 
+            designation = Position.objects.get(user=request.user).designation
+            message = f"{request.user.first_name} {request.user.last_name} has issued a borrower's slip #{slip.custom_id}"
+            recipient = None
+
+            if designation == "videojournalist":
+                recipient = Position.objects.get(designation="senior_videojournalist").user
+            elif designation == "photojournalist":
+                recipient = Position.objects.get(designation="senior_photojournalist").user
+            elif designation == "illustrator":
+                recipient = Position.objects.get(designation="senior_illustrator").user
+
+            CustomNotification.objects.create(recipient=recipient, message=message)
+
             return Response({'message': 'Gear/s successfully borrowed'}, status=status.HTTP_200_OK)
 
         elif action == 'use':
@@ -141,33 +154,6 @@ class GearsView(APIView):
             log.save()
 
             return Response({'message': 'Gear successfully marked as unused.'}, status=status.HTTP_200_OK)
-
-        slip_id = request.data.get('slip_id')
-
-        if not slip_id:
-            return Response({'error': 'Slip ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            slip = Slip.objects.get(id=slip_id)
-        except Slip.DoesNotExist:
-            return Response({'error': 'Slip not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if slip.slipped_by != request.user:
-            return Response({'error': 'You cannot modify this slip'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if action == 'return':
-            condition_after = request.data.get('condition_after')
-
-            if not condition_after:
-                return Response({'error': 'Condition after is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-            Slip.return_date = timezone.now()
-            Slip.condition_after = condition_after
-            Slip.save()
-
-            Log.objects.create(user=request.user, gear=Slip.gear_borrowed, action=action)
-
-            return Response({'message': 'Gear successfully returned'}, status=status.HTTP_200_OK)
 
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -340,6 +326,10 @@ class SlipsView(APIView):
             log.gear.set(slip.gear_borrowed.all())
             log.save()
 
+            message = f"Slip #{slip.custom_id} was successfully returned!"
+
+            CustomNotification.objects.create(recipient=slip.slipped_by, message=message)
+
             return Response({'message': 'Gear successfully returned'}, status=status.HTTP_200_OK)
         elif action == 'for_return':
             if slip.slipped_by != request.user:
@@ -354,6 +344,11 @@ class SlipsView(APIView):
             log.save()
 
             slip.save()
+
+            message = f"Slip #{slip.custom_id} is waiting for your approval to return!"
+            recipient = Position.objects.get(designation='circulations_manager').user
+
+            CustomNotification.objects.create(recipient=recipient, message=message)
 
             return Response({'message': 'Slip is marked for return.'}, status=status.HTTP_200_OK)
         elif action == 'declined':
@@ -370,14 +365,33 @@ class SlipsView(APIView):
             log.gear.set(slip.gear_borrowed.all())
             log.save()
 
+            message = f"Unfortunately, your slip #{slip.custom_id} has been declined."
+
+            CustomNotification.objects.create(recipient=slip.slipped_by, message=message)
+
             return Response({'message': 'Slip was successfully declined.'}, status=status.HTTP_200_OK)
         elif action == 'accept':
             if section == 'editorial':
                 slip.section_editor_signature = True
+
+                message = f"{slip.slipped_by.first_name} {slip.slipped_by.last_name}'s slip #{slip.custom_id} is waiting for your approval!"
+                recipient = Position.objects.get(designation='circulations_manager').user
+
+                CustomNotification.objects.create(recipient=recipient, message=message)
             elif section == 'managerial' and designation == 'circulations_manager':
                 slip.circulations_manager_signature = True
+
+                message = f"{slip.slipped_by.first_name} {slip.slipped_by.last_name}'s slip #{slip.custom_id} is waiting for your approval!"
+                recipient = Position.objects.get(designation='managing_editor').user
+
+                CustomNotification.objects.create(recipient=recipient, message=message)
             elif section == 'managerial' and designation == 'managing_editor':
                 slip.managing_editor_signature = True
+
+                message = f"{slip.slipped_by.first_name} {slip.slipped_by.last_name}'s slip #{slip.custom_id} is waiting for your approval!"
+                recipient = Position.objects.get(designation='editor_in_chief').user
+
+                CustomNotification.objects.create(recipient=recipient, message=message)
             elif section == 'executive' and designation == 'editor_in_chief':
                 slip.editor_in_chief_signature = True
 
@@ -385,6 +399,10 @@ class SlipsView(APIView):
                 log.slip = slip
                 log.gear.set(slip.gear_borrowed.all())
                 log.save()
+
+                message = f"Your slip #{slip.custom_id} has been approved!"
+
+                CustomNotification.objects.create(recipient=slip.slipped_by, message=message)
             else:
                 return Response({'error': 'You have unauthorized section and designation.'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -425,11 +443,4 @@ class NotifyView(APIView):
 
             notification.delete()
 
-        return Response({"message": "Success"}, status=status.HTTP_200_OK)
-        # slip = serializer.save(created_by=self.request.user)
-        # approver = get_supervisor_user()
-        # create_and_send_notification(
-        #     approver,
-        #     f"New borrow slip #{slip.id} requires approval.",
-        #     link=f"/slips/{slip.id}"
-        # )
+        return Response({}, status=status.HTTP_200_OK)
