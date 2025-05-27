@@ -1,0 +1,7 @@
+geartrac_backend
+    MAIN (1): py manage.py runserver
+    CELERY WORKER (1): celery -A geartrac_site worker --loglevel=info -E
+    CELERY BEAT (1): celery -A geartrac_site beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+geartrac_frontend
+    npm run dev
