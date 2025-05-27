@@ -1,10 +1,11 @@
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
 import { api } from "./api";
 import { isAuthenticated, userPermissionLevel } from "@/auth";
 
 const isMenuOpen = ref(false);
 const currentNotification = reactive({});
+const notificationUpdate = ref(false);
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
@@ -21,6 +22,16 @@ setTimeout(() => {
 import { onMounted, onBeforeUnmount } from "vue";
 
 const notifications = ref([]);
+
+watch(
+  () => notifications.value,
+  (newNotifications) => {
+    notificationUpdate.value = newNotifications.some(
+      (notification) => !notification.read
+    );
+  },
+  { deep: true }
+);
 
 let socket;
 
@@ -156,7 +167,11 @@ onBeforeUnmount(() => {
           >
             Log In
           </RouterLink>
-          <div v-if="isAuthenticated" class="dropdown dropdown-center">
+          <div
+            v-if="isAuthenticated"
+            class="dropdown dropdown-center"
+            @click="if (notificationUpdate) notificationUpdate = false;"
+          >
             <div
               tabindex="0"
               role="button"
@@ -167,7 +182,7 @@ onBeforeUnmount(() => {
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
-                fill="none"
+                :fill="notificationUpdate ? 'green' : 'none'"
                 stroke="#FFFFFF"
                 stroke-width="2"
                 stroke-linecap="round"
@@ -224,8 +239,12 @@ onBeforeUnmount(() => {
               <div
                 class="text-blue-500 mt-2 flex justify-center hover:cursor-pointer"
                 @click="markAllAsRead"
+                v-if="notifications.length"
               >
                 Mark all as read
+              </div>
+              <div class="text-gray-500 flex justify-center" v-if="!notifications.length">
+                No notifications!
               </div>
             </ul>
           </div>
