@@ -212,7 +212,7 @@ class SlipsView(APIView):
                     declined=True
                 ) | Slip.objects.filter(slipped_by=request.user, returned=True)
             else:
-                slips = Slip.objects.filter(slipped_by=request.user, currently_active=True, for_return=False)
+                slips = Slip.objects.filter(slipped_by=request.user, currently_active=True)
         elif section == 'editorial':
             staff_users = []
 
