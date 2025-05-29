@@ -5,3 +5,8 @@ geartrac_backend
 
 geartrac_frontend
     npm run dev
+
+OR
+
+START.sh
+    bash START.sh
