@@ -7,6 +7,7 @@ import GearsView from '@/views/GearsView.vue'
 import BorrowView from '@/views/BorrowView.vue'
 import SlipsView from '@/views/SlipsView.vue'
 import LogsView from '@/views/LogsView.vue'
+import { isAuthenticated } from '../auth.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,23 +36,35 @@ const router = createRouter({
       path: '/gears',
       name: 'gears',
       component: GearsView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/borrow',
       name: 'borrow',
       component: BorrowView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/slips',
       name: 'slips',
       component: SlipsView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/logs',
       name: 'logs',
       component: LogsView,
+      meta: { requiresAuth: true },
     }
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth && !isAuthenticated.value) {
+    next({ name: 'login' })
+  } else {
+    next()
+  }
 })
 
 export default router

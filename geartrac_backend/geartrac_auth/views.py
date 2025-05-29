@@ -135,6 +135,11 @@ class ValidateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        print(Position.objects.get(user=request.user).permission_level)
+
+        if Position.objects.get(user=request.user).permission_level == 0:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         return Response(status=status.HTTP_200_OK)
 
 class DetailsView(APIView):

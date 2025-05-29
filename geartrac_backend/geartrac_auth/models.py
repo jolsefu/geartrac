@@ -12,6 +12,7 @@ class Position(models.Model):
         ('managerial', 'Managerial'),
         ('editorial', 'Editorial'),
         ('staff', 'Staff'),
+        ('guest', 'Guest'),
     ]
 
     DESIGNATION_CHOICES = [
@@ -63,7 +64,7 @@ class Position(models.Model):
     section = models.CharField(
         max_length=20,
         choices=SECTION_CHOICES,
-        default='staff',
+        default='guest',
     )
     designation = models.CharField(
         max_length=30,
@@ -77,6 +78,7 @@ class Position(models.Model):
         response = { 'level': 0 }
 
         section_levels = {
+            'guest': 0,
             'staff': 1,
             'editorial': 2,
             'managerial': 3,
