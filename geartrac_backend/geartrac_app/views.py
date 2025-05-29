@@ -205,7 +205,7 @@ class SlipsView(APIView):
 
         archived = request.query_params.get('archived', 'false').lower() == 'true'
         active = request.query_params.get('active', 'false').lower() == 'true'
-        unsigned = request.query_params.get('unsigned', 'false').lower() == 'true'
+        approvals = request.query_params.get('approvals', 'false').lower() == 'true'
 
         if section == 'staff':
             if archived:
@@ -253,7 +253,7 @@ class SlipsView(APIView):
                 ) | Slip.objects.filter(returned=True)
             elif active:
                 slips = Slip.objects.filter(currently_active=True) | Slip.objects.filter(for_return=True)
-            elif unsigned:
+            elif approvals:
                 if section == 'managerial' and designation == 'circulations_manager':
                     slips = Slip.objects.filter(
                         currently_active=True,

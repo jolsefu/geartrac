@@ -14,7 +14,7 @@ const paginator = reactive({
   slips: [],
   archived: false,
   active: true,
-  unsigned: false,
+  approvals: false,
   search: null,
 
   pagesCount: 0,
@@ -29,7 +29,7 @@ const notify = reactive({
 });
 
 watch(
-  () => [paginator.archived, paginator.active, paginator.unsigned],
+  () => [paginator.archived, paginator.active, paginator.approvals],
   () => {
     isVisible.value = false;
     setTimeout(() => {
@@ -54,7 +54,7 @@ async function getSlips() {
         page: paginator.currentPage,
         archived: paginator.archived,
         active: paginator.active,
-        unsigned: paginator.unsigned,
+        approvals: paginator.approvals,
 
         search: paginator.search,
       },
@@ -166,15 +166,16 @@ function openSlipModal(slip) {
 }
 
 function cycleSlipStatus() {
-  const statuses = ["active", "archived", "unsigned"];
+  const statuses =
+    userPermissionLevel.value < 3
+      ? ["archived", "active"]
+      : ["active", "archived", "approvals"];
   const currentIndex = statuses.findIndex((status) => paginator[status]);
   const nextIndex = (currentIndex + 1) % statuses.length;
 
   statuses.forEach((status, index) => {
     paginator[status] = index === nextIndex;
   });
-
-  console.log(paginator.archived, paginator.active, paginator.unsigned);
 }
 
 onMounted(() => {
@@ -204,7 +205,11 @@ onMounted(() => {
         <div>
           <Button @click="cycleSlipStatus">
             {{
-              paginator.archived ? "Archived" : paginator.unsigned ? "Unsigned" : "Active"
+              paginator.archived
+                ? "Archived"
+                : paginator.approvals
+                ? "Approvals"
+                : "Active"
             }}</Button
           >
         </div>
