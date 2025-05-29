@@ -370,7 +370,6 @@ class SlipsView(APIView):
             log.save()
 
             message = f"Unfortunately, your slip #{slip.custom_id} has been declined."
-
             CustomNotification.objects.create(recipient=slip.slipped_by, message=message)
 
             return Response({'message': 'Slip was successfully declined.'}, status=status.HTTP_200_OK)
@@ -380,22 +379,28 @@ class SlipsView(APIView):
 
                 message = f"{slip.slipped_by.first_name} {slip.slipped_by.last_name}'s slip #{slip.custom_id} is waiting for your approval!"
                 recipient = Position.objects.get(designation='circulations_manager').user
-
                 CustomNotification.objects.create(recipient=recipient, message=message)
+
+                message = f"Your slip #{slip.custom_id} was approved by your Section Editor!"
+                CustomNotification.objects.create(recipient=slip.slipped_by, message=message)
             elif section == 'managerial' and designation == 'circulations_manager':
                 slip.circulations_manager_signature = True
 
                 message = f"{slip.slipped_by.first_name} {slip.slipped_by.last_name}'s slip #{slip.custom_id} is waiting for your approval!"
                 recipient = Position.objects.get(designation='managing_editor').user
-
                 CustomNotification.objects.create(recipient=recipient, message=message)
+
+                message = f"Your slip #{slip.custom_id} was approved by the Circulations Manager!"
+                CustomNotification.objects.create(recipient=slip.slipped_by, message=message)
             elif section == 'managerial' and designation == 'managing_editor':
                 slip.managing_editor_signature = True
 
                 message = f"{slip.slipped_by.first_name} {slip.slipped_by.last_name}'s slip #{slip.custom_id} is waiting for your approval!"
                 recipient = Position.objects.get(designation='editor_in_chief').user
-
                 CustomNotification.objects.create(recipient=recipient, message=message)
+
+                message = f"Your slip #{slip.custom_id} was approved by the Managing Editor!"
+                CustomNotification.objects.create(recipient=slip.slipped_by, message=message)
             elif section == 'executive' and designation == 'editor_in_chief':
                 slip.editor_in_chief_signature = True
 
@@ -404,8 +409,7 @@ class SlipsView(APIView):
                 log.gear.set(slip.gear_borrowed.all())
                 log.save()
 
-                message = f"Your slip #{slip.custom_id} has been approved!"
-
+                message = f"Your slip #{slip.custom_id} has been approved by the Editor-in-Chief!"
                 CustomNotification.objects.create(recipient=slip.slipped_by, message=message)
             else:
                 return Response({'error': 'You have unauthorized section and designation.'}, status=status.HTTP_403_FORBIDDEN)
