@@ -13,6 +13,8 @@ const conditionAfter = ref();
 const paginator = reactive({
   slips: [],
   archived: false,
+  active: true,
+  unsigned: false,
   search: null,
 
   pagesCount: 0,
@@ -27,7 +29,7 @@ const notify = reactive({
 });
 
 watch(
-  () => paginator.archived,
+  () => [paginator.archived, paginator.active, paginator.unsigned],
   () => {
     isVisible.value = false;
     setTimeout(() => {
@@ -51,6 +53,8 @@ async function getSlips() {
       params: {
         page: paginator.currentPage,
         archived: paginator.archived,
+        active: paginator.active,
+        unsigned: paginator.unsigned,
 
         search: paginator.search,
       },
@@ -161,6 +165,18 @@ function openSlipModal(slip) {
   document.querySelector("#slip-modal").showModal();
 }
 
+function cycleSlipStatus() {
+  const statuses = ["active", "archived", "unsigned"];
+  const currentIndex = statuses.findIndex((status) => paginator[status]);
+  const nextIndex = (currentIndex + 1) % statuses.length;
+
+  statuses.forEach((status, index) => {
+    paginator[status] = index === nextIndex;
+  });
+
+  console.log(paginator.archived, paginator.active, paginator.unsigned);
+}
+
 onMounted(() => {
   getSlips();
   setTimeout(() => {
@@ -186,9 +202,11 @@ onMounted(() => {
           />
         </div>
         <div>
-          <Button @click="paginator.archived = !paginator.archived">{{
-            paginator.archived ? "Archived Slips" : "Active Slips"
-          }}</Button>
+          <Button @click="cycleSlipStatus">
+            {{
+              paginator.archived ? "Archived" : paginator.unsigned ? "Unsigned" : "Active"
+            }}</Button
+          >
         </div>
       </div>
 
@@ -283,7 +301,7 @@ onMounted(() => {
 
               <div class="mt-5 flex flex-col">
                 <div class="flex items-center">
-                  <div v-if="!paginator.archived">
+                  <div v-if="!paginator.archived && !paginator.active">
                     <button
                       v-if="userPermissionLevel >= 2 && !currentSlip.for_return"
                       class="btn btn-success"
@@ -316,7 +334,13 @@ onMounted(() => {
                   </button>
                 </div>
 
-                <div v-if="userPermissionLevel >= 2 && currentSlip.for_return">
+                <div
+                  v-if="
+                    userPermissionLevel >= 2 &&
+                    currentSlip.for_return &&
+                    userDetails.designation === 'circulations_manager'
+                  "
+                >
                   <button
                     class="btn btn-success"
                     popovertarget="condition-popover"
