@@ -43,3 +43,45 @@ def notify_upcoming_returns():
             recipient=slip.slipped_by,
             message=message,
         )
+
+import datetime
+import os
+import subprocess
+from django.conf import settings
+
+@shared_task
+def backup_database():
+    # Configure this based on your database engine
+    db = settings.DATABASES['default']
+    engine = db['ENGINE']
+
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_dir = os.path.join(settings.BASE_DIR, 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+
+    if 'sqlite3' in engine:
+        db_path = db['NAME']
+        backup_path = os.path.join(backup_dir, f"db_backup_{timestamp}.sqlite3")
+        subprocess.run(['cp', db_path, backup_path])
+    elif 'postgresql' in engine:
+        backup_path = os.path.join(backup_dir, f"db_backup_{timestamp}.sql")
+        subprocess.run([
+            'pg_dump',
+            '-U', db['USER'],
+            '-h', db.get('HOST', 'localhost'),
+            '-p', str(db.get('PORT', 5432)),
+            '-d', db['NAME'],
+            '-f', backup_path
+        ], check=True, env={**os.environ, 'PGPASSWORD': db['PASSWORD']})
+    elif 'mysql' in engine:
+        backup_path = os.path.join(backup_dir, f"db_backup_{timestamp}.sql")
+        subprocess.run([
+            'mysqldump',
+            '-u', db['USER'],
+            f"-p{db['PASSWORD']}",
+            db['NAME']
+        ], stdout=open(backup_path, 'w'))
+    else:
+        raise NotImplementedError(f"Backup not implemented for {engine}")
+
+    return f"Backup created: {backup_path}"
