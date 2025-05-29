@@ -28,7 +28,7 @@ def notify_upcoming_returns():
             message = f"Reminder: Slip #{slip.custom_id} is due for return in 6 hours."
         elif timedelta(hours=1) >= time_diff > timedelta(0):
             message = f"Reminder: Slip #{slip.custom_id} is due for return in 1 hour."
-        else:
+        elif time_diff <= timedelta(0):
             prev_notification = CustomNotification.objects.filter(
                 recipient=slip.slipped_by,
                 message=f"Alert: Slip #{slip.custom_id} is overdue for return!"
