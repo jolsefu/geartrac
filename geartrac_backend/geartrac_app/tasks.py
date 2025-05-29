@@ -5,12 +5,8 @@ from .models import Slip, CustomNotification
 
 @shared_task
 def notify_upcoming_returns():
-    tomorrow = timezone.now() + timedelta(days=1)
-    start = tomorrow.replace(hour=0, minute=0, second=0, microsecond=0)
-    end = tomorrow.replace(hour=23, minute=59, second=59, microsecond=999999)
-
+    now = timezone.now()
     slips = Slip.objects.filter(
-        expected_return_date__range=(start, end),
         currently_active=True,
         for_return=False,
         returned=False,
@@ -18,7 +14,31 @@ def notify_upcoming_returns():
     )
 
     for slip in slips:
-        message = f"Reminder: Slip #{slip.custom_id} is due for return tomorrow."
+        expected = slip.expected_return_date
+        if timezone.is_naive(expected):
+            expected = timezone.make_aware(expected)
+
+        time_diff = expected - now
+
+        if timedelta(days=1) >= time_diff > timedelta(hours=12):
+            message = f"Reminder: Slip #{slip.custom_id} is due for return tomorrow."
+        elif timedelta(hours=12) >= time_diff > timedelta(hours=6):
+            message = f"Reminder: Slip #{slip.custom_id} is due for return in 12 hours."
+        elif timedelta(hours=6) >= time_diff > timedelta(hours=1):
+            message = f"Reminder: Slip #{slip.custom_id} is due for return in 6 hours."
+        elif timedelta(hours=1) >= time_diff > timedelta(0):
+            message = f"Reminder: Slip #{slip.custom_id} is due for return in 1 hour."
+        else:
+            prev_notification = CustomNotification.objects.filter(
+                recipient=slip.slipped_by,
+                message=f"Alert: Slip #{slip.custom_id} is overdue for return!"
+            ).order_by('-timestamp').first()
+
+            if prev_notification:
+                prev_notification.delete()
+
+            message = f"Alert: Slip #{slip.custom_id} is overdue for return!"
+
         CustomNotification.objects.get_or_create(
             recipient=slip.slipped_by,
             message=message,
