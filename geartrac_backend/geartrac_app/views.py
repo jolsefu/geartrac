@@ -12,12 +12,19 @@ from geartrac_auth.models import Position
 
 from django.utils.dateparse import parse_date
 
-from .utils import create_and_send_notification
+from geartrac_auth.models import Position
 
 
+
+class CustomIsAuthenticated(IsAuthenticated):
+    def has_permission(self, request, view):
+        position = Position.objects.get(user=request.user)
+        is_staff = True if position.permission_level >= 1 else False
+
+        return super().has_permission(request, view) and is_staff
 
 class GearsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomIsAuthenticated]
 
     def get(self, request):
         request_user_owner = request.query_params.get('request_user_owner')
@@ -158,7 +165,7 @@ class GearsView(APIView):
         return Response({'error': 'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
 class LogsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomIsAuthenticated]
 
     def get(self, request):
         if not request.user.log_access():
@@ -194,7 +201,7 @@ class LogsView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
 class SlipsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomIsAuthenticated]
 
     def get(self, request):
         position = Position.objects.get(user=request.user)
@@ -419,7 +426,7 @@ class SlipsView(APIView):
             return Response({'message': 'Slip was accepted.'}, status=status.HTTP_200_OK)
 
 class NotifyView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomIsAuthenticated]
 
     def post(self, request):
         action = request.data.get('action')
