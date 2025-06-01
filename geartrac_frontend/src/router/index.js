@@ -7,7 +7,7 @@ import GearsView from '@/views/GearsView.vue'
 import BorrowView from '@/views/BorrowView.vue'
 import SlipsView from '@/views/SlipsView.vue'
 import LogsView from '@/views/LogsView.vue'
-import { isAuthenticated } from '../auth.js'
+import { checkAuth } from '../auth.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -60,7 +60,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !isAuthenticated.value) {
+  if (to.meta.requiresAuth && !checkAuth()) {
     next({ name: 'login' })
   } else {
     next()
