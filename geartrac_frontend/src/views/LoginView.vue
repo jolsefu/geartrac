@@ -29,6 +29,15 @@ setTimeout(() => {
           <CardDescription>You must login via carsu.edu.ph emails!</CardDescription>
         </CardHeader>
         <CardHeader v-else>
+          <CardTitle class="mb-5">
+            {{
+              userDetails.designation
+                .replace(/_/g, " ")
+                .split(" ")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ")
+            }}</CardTitle
+          >
           <CardTitle>Welcome to GearTRAC, {{ userDetails.first_name }}!</CardTitle>
           <CardDescription>Logged in as {{ userDetails.email }}</CardDescription>
         </CardHeader>
