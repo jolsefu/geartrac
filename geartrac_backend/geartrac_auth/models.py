@@ -71,7 +71,7 @@ class Position(models.Model):
         choices=DESIGNATION_CHOICES,
         default='',
     )
-    permission_level = models.IntegerField()
+    permission_level = models.IntegerField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):

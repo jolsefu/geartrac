@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, watch } from "vue";
 import { api } from "./api";
-import { isAuthenticated, userPermissionLevel } from "@/auth";
+import { isAuthenticated, isGuest, userPermissionLevel } from "@/auth";
 
 const isMenuOpen = ref(false);
 const currentNotification = reactive({});
@@ -161,7 +161,7 @@ onBeforeUnmount(() => {
 
         <div class="flex items-center space-x-4 ml-auto">
           <RouterLink
-            v-if="!isAuthenticated"
+            v-if="!isAuthenticated && !isGuest"
             to="/login"
             class="hidden md:block text-white px-4 py-2 bg-[#3b3b3b] hover:bg-[#505050] rounded-lg transition duration-300"
           >
@@ -249,7 +249,7 @@ onBeforeUnmount(() => {
             </ul>
           </div>
           <RouterLink
-            v-if="isAuthenticated"
+            v-if="isAuthenticated || isGuest"
             to="/login"
             class="hidden md:block text-white px-4 py-2 bg-[#3b3b3b] hover:bg-[#505050] rounded-lg transition duration-300"
           >

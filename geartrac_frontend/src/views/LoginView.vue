@@ -1,6 +1,13 @@
 <script setup>
 import { ref, reactive } from "vue";
-import { authLogIn, authLogOut, isAuthenticated, userDetails, authNotify } from "@/auth";
+import {
+  authLogIn,
+  authLogOut,
+  isAuthenticated,
+  isGuest,
+  userDetails,
+  authNotify,
+} from "@/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,12 +31,12 @@ setTimeout(() => {
   <Transition name="swipe-up">
     <div v-if="isVisible" class="flex justify-center h-screen pt-[8rem] max-w">
       <Card class="w-fit h-fit">
-        <CardHeader v-if="!isAuthenticated">
+        <CardHeader v-if="!isAuthenticated && !isGuest">
           <CardTitle>Login to GearTRAC</CardTitle>
           <CardDescription>You must login via carsu.edu.ph emails!</CardDescription>
         </CardHeader>
         <CardHeader v-else>
-          <CardTitle class="mb-5">
+          <CardTitle v-if="!isGuest" class="mb-5">
             {{
               userDetails.designation
                 .replace(/_/g, " ")
@@ -38,6 +45,7 @@ setTimeout(() => {
                 .join(" ")
             }}</CardTitle
           >
+          <CardTitle v-else class="mb-5"> Guest </CardTitle>
           <CardTitle>Welcome to GearTRAC, {{ userDetails.first_name }}!</CardTitle>
           <CardDescription>Logged in as {{ userDetails.email }}</CardDescription>
         </CardHeader>
@@ -45,7 +53,7 @@ setTimeout(() => {
           <div class="flex flex-col gap-1">
             <div>
               <Button
-                v-if="!isAuthenticated"
+                v-if="!isAuthenticated && !isGuest"
                 @click="authLogIn"
                 class="bg-white text-black hover:bg-[#cccccc]"
               >

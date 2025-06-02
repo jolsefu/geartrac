@@ -23,8 +23,20 @@ export const authNotify = reactive({
 
 
 export const isAuthenticated = ref(false)
+export const isGuest = ref(false)
 export const userDetails = ref({})
 export const userPermissionLevel = ref(0)
+
+export const checkGuest = async () => {
+  try {
+    const response = await auth.get('guest/')
+    isGuest.value = response.status === 200
+  } catch (error) {
+    isGuest.value = false
+  }
+
+  return isGuest.value
+}
 
 export const checkAuth = async () => {
   try {
@@ -55,6 +67,7 @@ const retrievePermissionLevel = async () => {
   }
 }
 
+checkGuest()
 checkAuth()
 retrieveDetails()
 retrievePermissionLevel()

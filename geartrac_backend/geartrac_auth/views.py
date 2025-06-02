@@ -39,9 +39,12 @@ def get_csrf_token(request):
 
 @receiver(post_save, sender=User)
 def check_email_domain(sender, instance, created, **kwargs):
-    if created and not instance.email.endswith("@carsu.edu.ph"):
-        instance.delete()
-        raise ValidationError({'error': "Only @carsu.edu.ph emails are allowed."})
+    if created:
+        if not instance.email.endswith("@carsu.edu.ph"):
+            instance.delete()
+            raise ValidationError({'error': "Only @carsu.edu.ph emails are allowed."})
+        else:
+            Position.objects.create(user=instance, section="Guest")
 
 """
     GoogleOAuth2CLient and GoogleLogin(SocialLoginView)
@@ -135,12 +138,23 @@ class ValidateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        print(Position.objects.get(user=request.user).permission_level)
-
         if Position.objects.get(user=request.user).permission_level == 0:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         return Response(status=status.HTTP_200_OK)
+
+class GuestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            position = Position.objects.get(user=request.user)
+            if position.permission_level == 0:
+                return Response(status=status.HTTP_200_OK)
+        except Position.DoesNotExist:
+            return Response(status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
 class DetailsView(APIView):
     permission_classes = [IsAuthenticated]
